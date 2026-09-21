@@ -138,7 +138,7 @@
         </button>
       </div>
 
-      <!-- QR Box (as in screenshot) -->
+      <!-- QR Box -->
       <div class="inner-box p-5 rounded-2xl flex flex-col sm:flex-row items-center gap-5">
         <div class="p-2 bg-white rounded-xl flex-shrink-0 shadow-lg">
           <div id="qrcode"></div>
@@ -233,7 +233,6 @@
       document.getElementById('user-sub-id').innerText = REAL_SUB_URL.split('/sub/')[1].slice(0, 16) + "...";
       makeQr(REAL_SUB_URL);
 
-      // Setup App links
       document.getElementById('link-v2rayng').href = "v2rayng://install-config?url=" + encodeURIComponent(REAL_SUB_URL);
       document.getElementById('link-singbox').href = "sing-box://import-remote-profile?url=" + encodeURIComponent(REAL_SUB_URL);
       document.getElementById('link-streisand').href = "streisand://import/" + REAL_SUB_URL;
@@ -245,7 +244,6 @@
       };
 
       try {
-        // خواندن از پروکسی داخلی nginx برای دور زدن CORS
         const res = await fetch('/get-sub-data');
         const userInfo = res.headers.get('subscription-userinfo');
         
@@ -283,7 +281,6 @@
           }
         }
 
-        // دیکود کردن کانفیگ‌ها و لیست کردن در تب Configs
         const raw = await res.text();
         let decoded = raw;
         try { decoded = atob(raw.trim()); } catch(e) {}
