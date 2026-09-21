@@ -1,1 +1,763 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Subscription Info - Pasargad Panel</title>
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Font Awesome Icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <!-- QRCode.js Library -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
 
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          colors: {
+            brand: {
+              cyan: '#38bdf8',
+              accent: '#6366f1',
+              darkBg: '#090d16',
+              cardBg: '#131926',
+              cardInner: '#1a2234',
+              borderDark: '#26334d'
+            }
+          },
+          fontFamily: {
+            sans: ['Inter', 'Vazirmatn', 'system-ui', '-apple-system', 'sans-serif'],
+            vazir: ['Vazirmatn', 'sans-serif']
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Vazirmatn:wght@300;400;500;700&display=swap');
+
+    .grid-bg-dark {
+      background-color: #090c15;
+      background-image: 
+        radial-gradient(circle at 18% 25%, rgba(67, 56, 202, 0.28) 0%, transparent 45%),
+        radial-gradient(circle at 82% 75%, rgba(14, 116, 144, 0.25) 0%, transparent 40%),
+        linear-gradient(to right, rgba(255, 255, 255, 0.02) 1px, transparent 1px),
+        linear-gradient(to bottom, rgba(255, 255, 255, 0.02) 1px, transparent 1px);
+      background-size: 100% 100%, 100% 100%, 36px 36px, 36px 36px;
+    }
+
+    .grid-bg-light {
+      background-color: #f1f5f9;
+      background-image: 
+        radial-gradient(circle at 20% 20%, rgba(99, 102, 241, 0.15) 0%, transparent 40%),
+        radial-gradient(circle at 80% 80%, rgba(56, 189, 248, 0.15) 0%, transparent 40%),
+        linear-gradient(to right, rgba(0, 0, 0, 0.03) 1px, transparent 1px),
+        linear-gradient(to bottom, rgba(0, 0, 0, 0.03) 1px, transparent 1px);
+      background-size: 100% 100%, 100% 100%, 36px 36px, 36px 36px;
+    }
+
+    .circle-progress-ring {
+      transform: rotate(-90deg);
+      transform-origin: 50% 50%;
+      transition: stroke-dashoffset 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    ::-webkit-scrollbar {
+      width: 6px;
+      height: 6px;
+    }
+    ::-webkit-scrollbar-track {
+      background: transparent;
+    }
+    ::-webkit-scrollbar-thumb {
+      background: #334155;
+      border-radius: 9999px;
+    }
+  </style>
+</head>
+
+<body class="grid-bg-dark text-slate-200 min-h-screen flex flex-col justify-between selection:bg-cyan-500 selection:text-white transition-colors duration-300 font-sans p-3 sm:p-6 md:p-8">
+
+  <!-- Toast Notification Alert -->
+  <div id="toast" class="fixed top-5 right-5 z-50 transform translate-y-[-150%] opacity-0 transition-all duration-300 flex items-center gap-3 bg-slate-900/95 text-white px-4 py-3 rounded-xl border border-cyan-500/40 shadow-2xl backdrop-blur-md">
+    <div class="w-8 h-8 rounded-full bg-cyan-500/20 text-cyan-400 flex items-center justify-center shrink-0">
+      <i class="fa-solid fa-check text-sm"></i>
+    </div>
+    <span id="toastMsg" class="text-sm font-medium">Link copied to clipboard!</span>
+  </div>
+
+  <div class="max-w-3xl w-full mx-auto my-auto py-2">
+    <!-- Main Floating Glassmorphic Container -->
+    <div class="relative bg-[#131926]/90 dark:bg-[#131926]/90 bg-white/95 text-slate-100 dark:text-slate-100 dark:border-[#20293d] border-slate-200 border rounded-2xl shadow-2xl backdrop-blur-xl overflow-hidden transition-all duration-300">
+      
+      <!-- Top Action Bar inside Card -->
+      <div class="p-5 sm:p-7 pb-4 border-b border-slate-800/80 dark:border-slate-800/80 border-slate-200/80 flex flex-wrap items-center justify-between gap-4">
+        <div class="flex items-center space-x-3.5 rtl:space-x-reverse">
+          <!-- Cyan Pulsing Signal Avatar -->
+          <div class="w-12 h-12 rounded-xl bg-gradient-to-br from-cyan-400 to-blue-600 flex items-center justify-center shadow-lg shadow-cyan-500/20 text-white shrink-0">
+            <i class="fa-solid fa-wifi text-xl"></i>
+          </div>
+          <div>
+            <h1 class="text-base sm:text-lg font-bold text-white dark:text-white tracking-wide flex items-center gap-2">
+              <span data-i18n="sub_info">Subscription info</span>
+            </h1>
+            <div class="flex items-center gap-1.5 text-xs text-slate-400 font-mono mt-0.5">
+              <span id="headerTokenSnippet" class="truncate max-w-[150px] sm:max-w-[220px]">8eaf3wq0tewcs06f</span>
+              <span class="text-slate-500">•</span>
+              <span class="text-amber-300 flex items-center gap-1">Test <i class="fa-solid fa-heart text-[11px] text-amber-400"></i></span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Action tools: Demo Customizer, Theme Toggle, Language -->
+        <div class="flex items-center space-x-2 rtl:space-x-reverse">
+          <!-- Simulator Modal Trigger -->
+          <button onclick="toggleModal(true)" title="Edit Mock Data" class="w-9 h-9 flex items-center justify-center rounded-xl bg-slate-800/80 hover:bg-slate-700/80 border border-slate-700/60 text-slate-300 hover:text-cyan-400 transition-all text-xs">
+            <i class="fa-solid fa-sliders"></i>
+          </button>
+          
+          <!-- Theme switch button (Dark/Light) -->
+          <button id="themeToggleBtn" onclick="toggleTheme()" title="Toggle Theme" class="w-9 h-9 flex items-center justify-center rounded-xl bg-slate-800/80 hover:bg-slate-700/80 border border-slate-700/60 text-slate-300 hover:text-cyan-400 transition-all text-xs">
+            <i class="fa-regular fa-moon" id="themeIcon"></i>
+          </button>
+
+          <!-- Language Switcher -->
+          <button onclick="toggleLanguage()" id="langBtn" title="Change Language" class="px-2.5 h-9 flex items-center justify-center rounded-xl bg-slate-800/80 hover:bg-slate-700/80 border border-slate-700/60 text-slate-300 hover:text-cyan-400 font-semibold transition-all text-xs">
+            FA
+          </button>
+
+          <!-- Share / QR toggle -->
+          <button onclick="copySubUrl()" title="Quick Copy" class="w-9 h-9 flex items-center justify-center rounded-xl bg-slate-800/80 hover:bg-slate-700/80 border border-slate-700/60 text-slate-300 hover:text-cyan-400 transition-all text-xs">
+            <i class="fa-regular fa-copy"></i>
+          </button>
+        </div>
+      </div>
+
+      <div class="p-5 sm:p-7 space-y-6">
+        <!-- Top Stats Row: Gauge + Big Remaining Number -->
+        <div class="flex flex-col sm:flex-row items-center justify-between gap-6 bg-[#182033]/60 dark:bg-[#182033]/60 bg-slate-100/70 p-5 rounded-2xl border border-slate-800/60 dark:border-slate-800/60 border-slate-200">
+          
+          <!-- Circular Progress Ring -->
+          <div class="flex items-center gap-5">
+            <div class="relative w-28 h-28 flex items-center justify-center shrink-0">
+              <svg class="w-full h-full" viewBox="0 0 100 100">
+                <!-- Background Ring -->
+                <circle cx="50" cy="50" r="42" stroke="currentColor" stroke-width="7" class="text-slate-800/80 dark:text-slate-800" fill="transparent"/>
+                <!-- Animated Progress Ring -->
+                <circle id="progressRing" class="circle-progress-ring text-indigo-500" cx="50" cy="50" r="42" stroke="currentColor" stroke-width="7" stroke-linecap="round" fill="transparent" stroke-dasharray="263.89" stroke-dashoffset="255.18"/>
+              </svg>
+              <!-- Center Text in circle -->
+              <div class="absolute inset-0 flex flex-col items-center justify-center text-center">
+                <span id="percentText" class="text-lg font-extrabold text-white">3.3%</span>
+                <span class="text-[10px] text-slate-400 font-medium -mt-0.5 tracking-wider uppercase" data-i18n="usage">Usage</span>
+              </div>
+            </div>
+
+            <div class="hidden sm:block">
+              <div class="text-xs uppercase tracking-wider text-slate-400 font-medium" data-i18n="traffic_status">Traffic Status</div>
+              <div class="text-sm font-semibold text-cyan-400 mt-1 flex items-center gap-2">
+                <span class="w-2 h-2 rounded-full bg-cyan-400 animate-ping inline-block"></span>
+                <span id="trafficSpeedLabel">Live Accounting</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Remaining Bandwidth Highlight -->
+          <div class="text-center sm:text-right">
+            <div class="text-xs text-slate-400 font-medium" data-i18n="remaining">Remaining</div>
+            <div class="text-3xl sm:text-4xl font-extrabold text-white dark:text-white tracking-tight mt-0.5 font-mono">
+              <span id="statRemaining">9.67</span> <span class="text-lg font-medium text-slate-400">GB</span>
+            </div>
+            <div class="text-xs text-slate-400 font-medium mt-1">
+              <span data-i18n="of">of</span> <span id="statTotalQuotaLabel">10.00 GB</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="grid grid-cols-2 md:grid-cols-3 gap-3">
+          <!-- 1. Days left -->
+          <div class="bg-[#182033]/70 dark:bg-[#182033]/70 bg-slate-100 p-3.5 rounded-xl border border-slate-800/70 dark:border-slate-800/70 border-slate-200 flex flex-col justify-between">
+            <span class="text-[11px] text-slate-400 font-medium" data-i18n="days_left">Days left</span>
+            <span id="statDaysLeft" class="text-base sm:text-lg font-bold text-white mt-1">30</span>
+          </div>
+
+          <!-- 2. Expiry -->
+          <div class="bg-[#182033]/70 dark:bg-[#182033]/70 bg-slate-100 p-3.5 rounded-xl border border-slate-800/70 dark:border-slate-800/70 border-slate-200 flex flex-col justify-between">
+            <span class="text-[11px] text-slate-400 font-medium" data-i18n="expiry">Expiry</span>
+            <span id="statExpiry" class="text-xs sm:text-sm font-semibold text-white mt-1 font-mono">10/21/2026, 00:00:00</span>
+          </div>
+
+          <!-- 3. Status Badge -->
+          <div class="bg-[#182033]/70 dark:bg-[#182033]/70 bg-slate-100 p-3.5 rounded-xl border border-slate-800/70 dark:border-slate-800/70 border-slate-200 flex flex-col justify-between">
+            <span class="text-[11px] text-slate-400 font-medium" data-i18n="status">Status</span>
+            <div class="mt-1">
+              <span id="statStatusBadge" class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-emerald-500/15 text-emerald-400 border border-emerald-500/30">
+                <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 mr-1.5 animate-pulse"></span>
+                Active
+              </span>
+            </div>
+          </div>
+
+          <!-- 4. Downloaded -->
+          <div class="bg-[#182033]/70 dark:bg-[#182033]/70 bg-slate-100 p-3.5 rounded-xl border border-slate-800/70 dark:border-slate-800/70 border-slate-200 flex flex-col justify-between">
+            <span class="text-[11px] text-slate-400 font-medium" data-i18n="downloaded">Downloaded</span>
+            <span id="statDownloaded" class="text-sm sm:text-base font-bold text-white mt-1 font-mono">316.98 MB</span>
+          </div>
+
+          <!-- 5. Uploaded -->
+          <div class="bg-[#182033]/70 dark:bg-[#182033]/70 bg-slate-100 p-3.5 rounded-xl border border-slate-800/70 dark:border-slate-800/70 border-slate-200 flex flex-col justify-between">
+            <span class="text-[11px] text-slate-400 font-medium" data-i18n="uploaded">Uploaded</span>
+            <span id="statUploaded" class="text-sm sm:text-base font-bold text-white mt-1 font-mono">24.28 MB</span>
+          </div>
+
+          <!-- 6. Total quota -->
+          <div class="bg-[#182033]/70 dark:bg-[#182033]/70 bg-slate-100 p-3.5 rounded-xl border border-slate-800/70 dark:border-slate-800/70 border-slate-200 flex flex-col justify-between">
+            <span class="text-[11px] text-slate-400 font-medium" data-i18n="total_quota">Total quota</span>
+            <span id="statTotalQuota" class="text-sm sm:text-base font-bold text-white mt-1 font-mono">10.00 GB</span>
+          </div>
+        </div>
+
+        <!-- Last Online Row -->
+        <div class="bg-[#182033]/50 dark:bg-[#182033]/50 bg-slate-100/60 p-3 rounded-xl border border-slate-800/60 dark:border-slate-800/60 border-slate-200 flex items-center justify-between">
+          <span class="text-xs text-slate-400 font-medium" data-i18n="last_online">Last Online</span>
+          <span id="statLastOnline" class="text-xs sm:text-sm font-semibold text-slate-300 font-mono">09/21/2026, 16:31:47</span>
+        </div>
+
+        <div class="pt-2 border-t border-slate-800/80 dark:border-slate-800/80 border-slate-200">
+          <!-- Navigation Tabs -->
+          <div class="flex items-center space-x-1 sm:space-x-2 border-b border-slate-800/80 dark:border-slate-800/80 border-slate-200 pb-2">
+            <!-- Tab 1: Subscription -->
+            <button onclick="switchTab('sub')" id="tab-sub" class="tab-btn active px-3.5 py-1.5 rounded-lg text-xs sm:text-sm font-semibold flex items-center gap-1.5 transition-all text-cyan-400 bg-cyan-500/10 border border-cyan-500/30">
+              <i class="fa-solid fa-link text-xs"></i>
+              <span data-i18n="tab_subscription">Subscription</span>
+            </button>
+
+            <!-- Tab 2: Apps -->
+            <button onclick="switchTab('apps')" id="tab-apps" class="tab-btn px-3.5 py-1.5 rounded-lg text-xs sm:text-sm font-medium flex items-center gap-1.5 transition-all text-slate-400 hover:text-slate-200 hover:bg-slate-800/50">
+              <i class="fa-solid fa-grip text-xs"></i>
+              <span data-i18n="tab_apps">Apps</span>
+            </button>
+
+            <!-- Tab 3: Configs -->
+            <button onclick="switchTab('configs')" id="tab-configs" class="tab-btn px-3.5 py-1.5 rounded-lg text-xs sm:text-sm font-medium flex items-center gap-1.5 transition-all text-slate-400 hover:text-slate-200 hover:bg-slate-800/50">
+              <i class="fa-solid fa-list-ul text-xs"></i>
+              <span data-i18n="tab_configs">Configs</span>
+              <span class="ml-1 px-1.5 py-0.2 text-[10px] rounded-full bg-slate-800 text-slate-400" id="configsBadge">3</span>
+            </button>
+          </div>
+
+          <!-- TAB CONTENT 1: SUBSCRIPTION -->
+          <div id="content-sub" class="mt-4 space-y-4">
+            <div class="p-3.5 bg-[#182033]/90 dark:bg-[#182033]/90 bg-slate-100 rounded-xl border border-slate-800 dark:border-slate-800 border-slate-200 flex items-center justify-between gap-3">
+              <div class="flex items-center gap-3 overflow-hidden">
+                <span class="px-2 py-0.5 rounded text-[10px] font-extrabold bg-emerald-500/20 text-emerald-400 border border-emerald-500/40 uppercase">
+                  SUB
+                </span>
+                <div class="overflow-hidden">
+                  <div class="text-xs font-semibold text-white truncate" data-i18n="subscription_title">Subscription</div>
+                  <div id="subUrlDisplay" class="text-xs text-slate-400 font-mono truncate max-w-xs sm:max-w-md">
+                    https://lpum.ho3ein8537.dpdns.org/sub/8eaf3wq0tewcs06f
+                  </div>
+                </div>
+              </div>
+              <div class="flex items-center gap-1.5 shrink-0">
+                <button onclick="copySubUrl()" title="Copy Subscription" class="w-8 h-8 flex items-center justify-center rounded-lg bg-slate-800 hover:bg-cyan-500/20 border border-slate-700 hover:border-cyan-500/40 text-slate-300 hover:text-cyan-400 transition-all text-xs">
+                  <i class="fa-regular fa-copy"></i>
+                </button>
+                <button onclick="openSubUrl()" title="Open Subscription directly" class="w-8 h-8 flex items-center justify-center rounded-lg bg-slate-800 hover:bg-cyan-500/20 border border-slate-700 hover:border-cyan-500/40 text-slate-300 hover:text-cyan-400 transition-all text-xs">
+                  <i class="fa-solid fa-arrow-up-right-from-square"></i>
+                </button>
+              </div>
+            </div>
+
+            <div class="p-5 bg-[#182033]/60 dark:bg-[#182033]/60 bg-slate-100/80 rounded-xl border border-slate-800/80 dark:border-slate-800/80 border-slate-200 flex flex-col sm:flex-row items-center gap-5">
+              <div class="p-2.5 bg-white rounded-xl shadow-lg shrink-0" id="qrcode-box">
+                <div id="qrcode"></div>
+              </div>
+              
+              <div class="text-center sm:text-left">
+                <h3 class="text-sm sm:text-base font-bold text-white flex items-center justify-center sm:justify-start gap-2">
+                  <i class="fa-solid fa-qrcode text-cyan-400"></i>
+                  <span data-i18n="scan_title">Scan with your phone</span>
+                </h3>
+                <p class="text-xs text-slate-400 mt-1 max-w-sm leading-relaxed" data-i18n="scan_desc">
+                  Scan this code in your VPN app (V2rayNG, Sing-box, Streisand, Shadowrocket) to add the subscription without copying the link.
+                </p>
+                <div class="mt-3 flex flex-wrap items-center justify-center sm:justify-start gap-2">
+                  <button onclick="copySubUrl()" class="text-xs px-3 py-1.5 rounded-lg bg-cyan-500/10 hover:bg-cyan-500/20 border border-cyan-500/30 text-cyan-300 font-medium transition-all flex items-center gap-1.5">
+                    <i class="fa-solid fa-link text-[11px]"></i>
+                    <span data-i18n="copy_sub_btn">Copy Subscription</span>
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- TAB CONTENT 2: APPS -->
+          <div id="content-apps" class="mt-4 hidden space-y-3">
+            <p class="text-xs text-slate-400" data-i18n="apps_instruction">
+              Click any app below to automatically import your subscription link:
+            </p>
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+              <button onclick="importToApp('v2rayng')" class="flex items-center justify-between p-3 rounded-xl bg-[#182033]/80 hover:bg-[#1f2a44] border border-slate-800 hover:border-cyan-500/40 transition-all text-left group">
+                <div class="flex items-center gap-3">
+                  <div class="w-9 h-9 rounded-lg bg-emerald-500/20 text-emerald-400 flex items-center justify-center font-bold text-xs">
+                    <i class="fa-brands fa-android text-base"></i>
+                  </div>
+                  <div>
+                    <div class="text-xs font-semibold text-white group-hover:text-cyan-400 transition-colors">v2rayNG</div>
+                    <div class="text-[10px] text-slate-400">Android Client</div>
+                  </div>
+                </div>
+                <i class="fa-solid fa-cloud-arrow-down text-slate-500 group-hover:text-cyan-400 text-xs"></i>
+              </button>
+
+              <button onclick="importToApp('streisand')" class="flex items-center justify-between p-3 rounded-xl bg-[#182033]/80 hover:bg-[#1f2a44] border border-slate-800 hover:border-cyan-500/40 transition-all text-left group">
+                <div class="flex items-center gap-3">
+                  <div class="w-9 h-9 rounded-lg bg-blue-500/20 text-blue-400 flex items-center justify-center font-bold text-xs">
+                    <i class="fa-brands fa-apple text-base"></i>
+                  </div>
+                  <div>
+                    <div class="text-xs font-semibold text-white group-hover:text-cyan-400 transition-colors">Streisand</div>
+                    <div class="text-[10px] text-slate-400">iOS / iPadOS</div>
+                  </div>
+                </div>
+                <i class="fa-solid fa-cloud-arrow-down text-slate-500 group-hover:text-cyan-400 text-xs"></i>
+              </button>
+
+              <button onclick="importToApp('shadowrocket')" class="flex items-center justify-between p-3 rounded-xl bg-[#182033]/80 hover:bg-[#1f2a44] border border-slate-800 hover:border-cyan-500/40 transition-all text-left group">
+                <div class="flex items-center gap-3">
+                  <div class="w-9 h-9 rounded-lg bg-indigo-500/20 text-indigo-400 flex items-center justify-center font-bold text-xs">
+                    <i class="fa-solid fa-rocket text-sm"></i>
+                  </div>
+                  <div>
+                    <div class="text-xs font-semibold text-white group-hover:text-cyan-400 transition-colors">Shadowrocket</div>
+                    <div class="text-[10px] text-slate-400">iOS / macOS</div>
+                  </div>
+                </div>
+                <i class="fa-solid fa-cloud-arrow-down text-slate-500 group-hover:text-cyan-400 text-xs"></i>
+              </button>
+
+              <button onclick="importToApp('singbox')" class="flex items-center justify-between p-3 rounded-xl bg-[#182033]/80 hover:bg-[#1f2a44] border border-slate-800 hover:border-cyan-500/40 transition-all text-left group">
+                <div class="flex items-center gap-3">
+                  <div class="w-9 h-9 rounded-lg bg-violet-500/20 text-violet-400 flex items-center justify-center font-bold text-xs">
+                    <i class="fa-solid fa-cube text-sm"></i>
+                  </div>
+                  <div>
+                    <div class="text-xs font-semibold text-white group-hover:text-cyan-400 transition-colors">Sing-box</div>
+                    <div class="text-[10px] text-slate-400">Universal Multi-platform</div>
+                  </div>
+                </div>
+                <i class="fa-solid fa-cloud-arrow-down text-slate-500 group-hover:text-cyan-400 text-xs"></i>
+              </button>
+            </div>
+          </div>
+
+          <!-- TAB CONTENT 3: CONFIGS -->
+          <div id="content-configs" class="mt-4 hidden space-y-2.5">
+            <div class="flex items-center justify-between mb-2">
+              <span class="text-xs text-slate-400" data-i18n="available_nodes">Available Protocol Nodes</span>
+              <button onclick="copyAllConfigs()" class="text-[11px] text-cyan-400 hover:underline flex items-center gap-1">
+                <i class="fa-regular fa-copy"></i>
+                <span data-i18n="copy_all">Copy All</span>
+              </button>
+            </div>
+
+            <div class="p-3 bg-[#182033]/80 rounded-xl border border-slate-800 flex items-center justify-between gap-2">
+              <div class="flex items-center gap-2.5 overflow-hidden">
+                <span class="px-1.5 py-0.5 rounded text-[10px] font-bold bg-cyan-500/20 text-cyan-300 border border-cyan-500/30 font-mono">VLESS</span>
+                <div class="overflow-hidden">
+                  <div class="text-xs font-semibold text-white truncate">🇩🇪 Germany - CDN Pasargad 01</div>
+                  <div class="text-[10px] text-slate-400 font-mono truncate">vless://8eaf3wq0-tewc-s06f-9981@de.pasargad.link:443?security=reality</div>
+                </div>
+              </div>
+              <button onclick="copySpecificConfig('vless://8eaf3wq0-tewc-s06f-9981@de.pasargad.link:443?security=reality&type=tcp&sni=speedtest.net&fp=chrome#🇩🇪%20Germany%2001')" class="p-2 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-cyan-400 transition-all text-xs shrink-0">
+                <i class="fa-regular fa-copy"></i>
+              </button>
+            </div>
+
+            <div class="p-3 bg-[#182033]/80 rounded-xl border border-slate-800 flex items-center justify-between gap-2">
+              <div class="flex items-center gap-2.5 overflow-hidden">
+                <span class="px-1.5 py-0.5 rounded text-[10px] font-bold bg-purple-500/20 text-purple-300 border border-purple-500/30 font-mono">VMESS</span>
+                <div class="overflow-hidden">
+                  <div class="text-xs font-semibold text-white truncate">🇫🇮 Finland - Turbo Speed 02</div>
+                  <div class="text-[10px] text-slate-400 font-mono truncate">vmess://ew0KICAidiI6ICIyIiwNCiAgInBzIjogI...</div>
+                </div>
+              </div>
+              <button onclick="copySpecificConfig('vmess://ew0KICAidiI6ICIyIiwNCiAgInBzIjogIuKcheKAnCBGaW5sYW5kIDAxIiwNCiAgImFkZCI6ICJmaS5wYXNhcmdhZC5saW5rIiwNCiAgInBvcnQiOiAiNDQzIg==')" class="p-2 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-cyan-400 transition-all text-xs shrink-0">
+                <i class="fa-regular fa-copy"></i>
+              </button>
+            </div>
+
+            <div class="p-3 bg-[#182033]/80 rounded-xl border border-slate-800 flex items-center justify-between gap-2">
+              <div class="flex items-center gap-2.5 overflow-hidden">
+                <span class="px-1.5 py-0.5 rounded text-[10px] font-bold bg-amber-500/20 text-amber-300 border border-amber-500/30 font-mono">TROJAN</span>
+                <div class="overflow-hidden">
+                  <div class="text-xs font-semibold text-white truncate">🇳🇱 Netherlands - Low Ping 03</div>
+                  <div class="text-[10px] text-slate-400 font-mono truncate">trojan://pass@nl.pasargad.link:443?security=tls</div>
+                </div>
+              </div>
+              <button onclick="copySpecificConfig('trojan://password@nl.pasargad.link:443?security=tls&type=grpc#🇳🇱%20Netherlands%2003')" class="p-2 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-cyan-400 transition-all text-xs shrink-0">
+                <i class="fa-regular fa-copy"></i>
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <div class="pt-3 border-t border-slate-800/60 dark:border-slate-800/60 border-slate-200 flex items-center justify-between text-[11px] text-slate-500">
+          <div class="flex items-center gap-1.5">
+            <i class="fa-regular fa-clock text-xs"></i>
+            <span data-i18n="auto_updates">Auto-updates every 12 hours</span>
+          </div>
+          <div class="font-mono opacity-80">v2.4.6</div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+  <!-- Data Simulator Modal -->
+  <div id="dataModal" class="fixed inset-0 bg-black/70 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
+    <div class="bg-slate-900 border border-slate-800 max-w-md w-full rounded-2xl p-6 shadow-2xl space-y-4">
+      <div class="flex items-center justify-between border-b border-slate-800 pb-3">
+        <h3 class="text-base font-bold text-white flex items-center gap-2">
+          <i class="fa-solid fa-sliders text-cyan-400"></i>
+          <span>Subscription Data Simulator</span>
+        </h3>
+        <button onclick="toggleModal(false)" class="text-slate-400 hover:text-white text-sm">
+          <i class="fa-solid fa-xmark"></i>
+        </button>
+      </div>
+
+      <div class="space-y-3 text-xs">
+        <div>
+          <label class="block text-slate-400 mb-1">User Identifier / Name</label>
+          <input type="text" id="inputUsername" value="8eaf3wq0tewcs06f" class="w-full bg-slate-800 border border-slate-700 rounded-lg p-2 text-white font-mono focus:border-cyan-400 outline-none">
+        </div>
+
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="block text-slate-400 mb-1">Total Quota (GB)</label>
+            <input type="number" id="inputTotalQuota" value="10.00" step="1" class="w-full bg-slate-800 border border-slate-700 rounded-lg p-2 text-white font-mono focus:border-cyan-400 outline-none">
+          </div>
+          <div>
+            <label class="block text-slate-400 mb-1">Used Quota (GB)</label>
+            <input type="number" id="inputUsedQuota" value="0.33" step="0.05" class="w-full bg-slate-800 border border-slate-700 rounded-lg p-2 text-white font-mono focus:border-cyan-400 outline-none">
+          </div>
+        </div>
+
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="block text-slate-400 mb-1">Days Left</label>
+            <input type="number" id="inputDaysLeft" value="30" class="w-full bg-slate-800 border border-slate-700 rounded-lg p-2 text-white font-mono focus:border-cyan-400 outline-none">
+          </div>
+          <div>
+            <label class="block text-slate-400 mb-1">Status</label>
+            <select id="inputStatus" class="w-full bg-slate-800 border border-slate-700 rounded-lg p-2 text-white outline-none focus:border-cyan-400">
+              <option value="Active">Active</option>
+              <option value="Limited">Limited</option>
+              <option value="Expired">Expired</option>
+            </select>
+          </div>
+        </div>
+
+        <div>
+          <label class="block text-slate-400 mb-1">Custom Subscription URL</label>
+          <input type="text" id="inputSubUrl" value="https://lpum.ho3ein8537.dpdns.org/sub/8eaf3wq0tewcs06f" class="w-full bg-slate-800 border border-slate-700 rounded-lg p-2 text-white font-mono text-[11px] focus:border-cyan-400 outline-none">
+        </div>
+      </div>
+
+      <div class="flex items-center justify-end gap-2 pt-2 border-t border-slate-800">
+        <button onclick="toggleModal(false)" class="px-3 py-1.5 rounded-lg bg-slate-800 text-slate-300 hover:bg-slate-700 text-xs">Cancel</button>
+        <button onclick="applySimulatedData()" class="px-4 py-1.5 rounded-lg bg-cyan-500 hover:bg-cyan-400 text-slate-950 font-bold text-xs shadow-lg shadow-cyan-500/20">Apply Changes</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const state = {
+      token: "8eaf3wq0tewcs06f",
+      subUrl: "https://lpum.ho3ein8537.dpdns.org/sub/8eaf3wq0tewcs06f",
+      totalQuotaGB: 10.00,
+      usedQuotaGB: 0.33,
+      daysLeft: 30,
+      expiryDate: "10/21/2026, 00:00:00",
+      status: "Active",
+      downloadedMB: 316.98,
+      uploadedMB: 24.28,
+      lastOnline: "09/21/2026, 16:31:47",
+      lang: 'en',
+      theme: 'dark'
+    };
+
+    const i18n = {
+      en: {
+        sub_info: "Subscription info",
+        usage: "Usage",
+        traffic_status: "Traffic Status",
+        remaining: "Remaining",
+        of: "of",
+        days_left: "Days left",
+        expiry: "Expiry",
+        status: "Status",
+        downloaded: "Downloaded",
+        uploaded: "Uploaded",
+        total_quota: "Total quota",
+        last_online: "Last Online",
+        tab_subscription: "Subscription",
+        tab_apps: "Apps",
+        tab_configs: "Configs",
+        subscription_title: "Subscription",
+        scan_title: "Scan with your phone",
+        scan_desc: "Scan this code in your VPN app to add the subscription without copying the link.",
+        copy_sub_btn: "Copy Subscription",
+        auto_updates: "Auto-updates every 12 hours",
+        apps_instruction: "Click any app below to automatically import your subscription link:",
+        available_nodes: "Available Protocol Nodes",
+        copy_all: "Copy All"
+      },
+      fa: {
+        sub_info: "اطلاعات اشتراک",
+        usage: "مصرف شده",
+        traffic_status: "وضعیت ترافیک",
+        remaining: "حجم باقی‌مانده",
+        of: "از",
+        days_left: "روزهای باقی‌مانده",
+        expiry: "تاریخ انقضا",
+        status: "وضعیت",
+        downloaded: "دانلود شده",
+        uploaded: "آپلود شده",
+        total_quota: "کل حجم",
+        last_online: "آخرین اتصال",
+        tab_subscription: "لینک سابسکریپشن",
+        tab_apps: "برنامه‌ها",
+        tab_configs: "کانفیگ‌ها",
+        subscription_title: "سابسکریپشن",
+        scan_title: "اسکن با گوشی موبایل",
+        scan_desc: "این بارکد را درون نرم‌افزار VPN خود اسکن کنید تا اشتراک بدون نیاز به کپی کردن لینک وارد شود.",
+        copy_sub_btn: "کپی لینک ساب",
+        auto_updates: "بروزرسانی خودکار هر ۱۲ ساعت",
+        apps_instruction: "جهت اضافه شدن سریع، روی اپلیکیشن مورد نظر خود کلیک کنید:",
+        available_nodes: "گره‌های ارتباطی موجود",
+        copy_all: "کپی همه کانفیگ‌ها"
+      }
+    };
+
+    let qrcodeInstance = null;
+
+    function initQRCode(url) {
+      const qrContainer = document.getElementById("qrcode");
+      qrContainer.innerHTML = "";
+      qrcodeInstance = new QRCode(qrContainer, {
+        text: url,
+        width: 140,
+        height: 140,
+        colorDark : "#0f172a",
+        colorLight : "#ffffff",
+        correctLevel : QRCode.CorrectLevel.M
+      });
+    }
+
+    function renderUI() {
+      const remainingGB = Math.max(0, state.totalQuotaGB - state.usedQuotaGB);
+      const usagePercent = ((state.usedQuotaGB / state.totalQuotaGB) * 100).toFixed(1);
+      
+      document.getElementById('statRemaining').innerText = remainingGB.toFixed(2);
+      document.getElementById('statTotalQuotaLabel').innerText = `${state.totalQuotaGB.toFixed(2)} GB`;
+      document.getElementById('statTotalQuota').innerText = `${state.totalQuotaGB.toFixed(2)} GB`;
+      document.getElementById('percentText').innerText = `${usagePercent}%`;
+      document.getElementById('statDaysLeft').innerText = state.daysLeft;
+      document.getElementById('statExpiry').innerText = state.expiryDate;
+      document.getElementById('statDownloaded').innerText = `${state.downloadedMB} MB`;
+      document.getElementById('statUploaded').innerText = `${state.uploadedMB} MB`;
+      document.getElementById('statLastOnline').innerText = state.lastOnline;
+      document.getElementById('headerTokenSnippet').innerText = state.token;
+      document.getElementById('subUrlDisplay').innerText = state.subUrl;
+
+      const statusBadge = document.getElementById('statStatusBadge');
+      if (state.status === "Active") {
+        statusBadge.className = "inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-emerald-500/15 text-emerald-400 border border-emerald-500/30";
+        statusBadge.innerHTML = `<span class="w-1.5 h-1.5 rounded-full bg-emerald-400 mr-1.5 animate-pulse"></span> Active`;
+      } else if (state.status === "Limited") {
+        statusBadge.className = "inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-amber-500/15 text-amber-400 border border-amber-500/30";
+        statusBadge.innerHTML = `<span class="w-1.5 h-1.5 rounded-full bg-amber-400 mr-1.5"></span> Limited`;
+      } else {
+        statusBadge.className = "inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-rose-500/15 text-rose-400 border border-rose-500/30";
+        statusBadge.innerHTML = `<span class="w-1.5 h-1.5 rounded-full bg-rose-400 mr-1.5"></span> Expired`;
+      }
+
+      const circumference = 2 * Math.PI * 42;
+      const progressRing = document.getElementById('progressRing');
+      const offset = circumference - (Math.min(100, Math.max(0, usagePercent)) / 100) * circumference;
+      progressRing.style.strokeDashoffset = offset;
+
+      initQRCode(state.subUrl);
+    }
+
+    function switchTab(tabId) {
+      ['sub', 'apps', 'configs'].forEach(id => {
+        const content = document.getElementById(`content-${id}`);
+        const tabBtn = document.getElementById(`tab-${id}`);
+        if (content && tabBtn) {
+          content.classList.add('hidden');
+          tabBtn.className = "tab-btn px-3.5 py-1.5 rounded-lg text-xs sm:text-sm font-medium flex items-center gap-1.5 transition-all text-slate-400 hover:text-slate-200 hover:bg-slate-800/50";
+        }
+      });
+
+      const targetContent = document.getElementById(`content-${tabId}`);
+      const targetBtn = document.getElementById(`tab-${tabId}`);
+      if (targetContent && targetBtn) {
+        targetContent.classList.remove('hidden');
+        targetBtn.className = "tab-btn active px-3.5 py-1.5 rounded-lg text-xs sm:text-sm font-semibold flex items-center gap-1.5 transition-all text-cyan-400 bg-cyan-500/10 border border-cyan-500/30";
+      }
+    }
+
+    function copyText(text, message = "Copied to clipboard!") {
+      try {
+        const textarea = document.createElement("textarea");
+        textarea.value = text;
+        textarea.style.position = "fixed";
+        textarea.style.opacity = "0";
+        document.body.appendChild(textarea);
+        textarea.focus();
+        textarea.select();
+        document.execCommand('copy');
+        document.body.removeChild(textarea);
+        showToast(message);
+      } catch (err) {
+        showToast("Error copying text");
+      }
+    }
+
+    function showToast(msg) {
+      const toast = document.getElementById("toast");
+      const toastMsg = document.getElementById("toastMsg");
+      toastMsg.innerText = msg;
+      toast.classList.remove("translate-y-[-150%]", "opacity-0");
+      toast.classList.add("translate-y-0", "opacity-100");
+      setTimeout(() => {
+        toast.classList.add("translate-y-[-150%]", "opacity-0");
+        toast.classList.remove("translate-y-0", "opacity-100");
+      }, 2500);
+    }
+
+    function copySubUrl() {
+      copyText(state.subUrl, state.lang === 'fa' ? 'لینک اشتراک کپی شد!' : 'Subscription link copied!');
+    }
+
+    function openSubUrl() {
+      window.open(state.subUrl, '_blank');
+    }
+
+    function copySpecificConfig(configStr) {
+      copyText(configStr, state.lang === 'fa' ? 'کانفیگ اختصاصی کپی شد!' : 'Node config copied!');
+    }
+
+    function copyAllConfigs() {
+      const configs = [
+        "vless://8eaf3wq0-tewc-s06f-9981@de.pasargad.link:443?security=reality&type=tcp&sni=speedtest.net&fp=chrome#🇩🇪 Germany 01",
+        "vmess://ew0KICAidiI6ICIyIiwNCiAgInBzIjogIuKcheKAnCBGaW5sYW5kIDAxIiwNCiAgImFkZCI6ICJmaS5wYXNhcmdhZC5saW5rIiwNCiAgInBvcnQiOiAiNDQzIg==#🇫🇮 Finland 02",
+        "trojan://password@nl.pasargad.link:443?security=tls&type=grpc#🇳🇱 Netherlands 03"
+      ].join("\n");
+      copyText(configs, state.lang === 'fa' ? 'تمامی کانفیگ‌ها کپی شدند!' : 'All configs copied to clipboard!');
+    }
+
+    function importToApp(app) {
+      let scheme = "";
+      const encodedUrl = encodeURIComponent(state.subUrl);
+      const encodedName = encodeURIComponent("Pasargad VPN");
+
+      switch(app) {
+        case 'v2rayng':
+          scheme = `v2rayng://install-sub?url=${encodedUrl}#${encodedName}`;
+          break;
+        case 'streisand':
+          scheme = `streisand://import/${state.subUrl}`;
+          break;
+        case 'shadowrocket':
+          scheme = `sub://${btoa(state.subUrl)}`;
+          break;
+        case 'singbox':
+          scheme = `sing-box://import-remote-profile?url=${encodedUrl}#${encodedName}`;
+          break;
+      }
+
+      window.location.href = scheme;
+      showToast(`Opening ${app.toUpperCase()}...`);
+    }
+
+    function toggleTheme() {
+      const html = document.documentElement;
+      const themeIcon = document.getElementById("themeIcon");
+      if (html.classList.contains("dark")) {
+        html.classList.remove("dark");
+        document.body.className = "grid-bg-light text-slate-800 min-h-screen flex flex-col justify-between selection:bg-cyan-500 selection:text-white transition-colors duration-300 font-sans p-3 sm:p-6 md:p-8";
+        themeIcon.className = "fa-regular fa-sun text-amber-500";
+        state.theme = 'light';
+      } else {
+        html.classList.add("dark");
+        document.body.className = "grid-bg-dark text-slate-200 min-h-screen flex flex-col justify-between selection:bg-cyan-500 selection:text-white transition-colors duration-300 font-sans p-3 sm:p-6 md:p-8";
+        themeIcon.className = "fa-regular fa-moon";
+        state.theme = 'dark';
+      }
+    }
+
+    function toggleLanguage() {
+      state.lang = state.lang === 'en' ? 'fa' : 'en';
+      document.getElementById('langBtn').innerText = state.lang === 'en' ? 'FA' : 'EN';
+      
+      const elements = document.querySelectorAll('[data-i18n]');
+      elements.forEach(el => {
+        const key = el.getAttribute('data-i18n');
+        if (i18n[state.lang][key]) {
+          el.innerText = i18n[state.lang][key];
+        }
+      });
+
+      if (state.lang === 'fa') {
+        document.body.dir = 'rtl';
+        document.body.classList.add('font-vazir');
+      } else {
+        document.body.dir = 'ltr';
+        document.body.classList.remove('font-vazir');
+      }
+    }
+
+    function toggleModal(show) {
+      const modal = document.getElementById('dataModal');
+      if (show) {
+        modal.classList.remove('hidden');
+      } else {
+        modal.classList.add('hidden');
+      }
+    }
+
+    function applySimulatedData() {
+      const uname = document.getElementById('inputUsername').value;
+      const total = parseFloat(document.getElementById('inputTotalQuota').value) || 10;
+      const used = parseFloat(document.getElementById('inputUsedQuota').value) || 0.33;
+      const days = parseInt(document.getElementById('inputDaysLeft').value) || 30;
+      const status = document.getElementById('inputStatus').value;
+      const subUrl = document.getElementById('inputSubUrl').value;
+
+      state.token = uname;
+      state.totalQuotaGB = total;
+      state.usedQuotaGB = used;
+      state.daysLeft = days;
+      state.status = status;
+      state.subUrl = subUrl;
+      state.downloadedMB = (used * 1024 * 0.93).toFixed(2);
+      state.uploadedMB = (used * 1024 * 0.07).toFixed(2);
+
+      renderUI();
+      toggleModal(false);
+      showToast("Data updated successfully!");
+    }
+
+    window.addEventListener('DOMContentLoaded', () => {
+      renderUI();
+    });
+  </script>
+</body>
+</html>
