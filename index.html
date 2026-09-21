@@ -1,104 +1,222 @@
-// آدرس ورکر سابسکریپشن شما
-const WORKER_SUB_URL = "https://late-truth-84b6.phoenix1198811.workers.dev/sub/djMsMSwxNzg5OTQ1NTEy.d1JmvrNN3xP-emhSxOLdoOJuU8YZnBCPZp5pTJm3EnI";
+<!DOCTYPE html>
+<html lang="fa" dir="rtl" class="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Subscription Info</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Vazirmatn:wght@300;400;500;600;700&display=swap');
+    * { font-family: 'Vazirmatn', -apple-system, sans-serif; }
+    .bg-main { background-color: #0b0f19; }
+    .card-bg { background-color: #111827; border: 1px solid #1f2937; }
+    .circle-progress { transform: rotate(-90deg); transform-origin: 50% 50%; }
+    .circle-progress-bar { transition: stroke-dashoffset 0.8s ease-in-out; }
+  </style>
+</head>
+<body class="bg-main text-slate-100 min-h-screen flex items-center justify-center p-4">
 
-async function syncWorkerSubscription() {
-  try {
-    // ۱. تنظیم مقدار فیلد سابسکریپشن و تولید QR Code
-    const subInput = document.getElementById('sub-url-input');
-    if (subInput) subInput.value = WORKER_SUB_URL;
+  <div class="w-full max-w-md bg-[#131b2e] border border-slate-800 rounded-3xl p-6 shadow-2xl space-y-6">
+    
+    <!-- هدر کارت -->
+    <div class="flex items-center justify-between border-b border-slate-800/80 pb-4">
+      <div class="flex items-center gap-3">
+        <div class="w-10 h-10 rounded-2xl bg-cyan-500/10 flex items-center justify-center text-cyan-400 border border-cyan-500/20">
+          <i class="fa-solid fa-wifi"></i>
+        </div>
+        <div>
+          <h1 class="text-base font-bold text-white tracking-wide">Subscription info</h1>
+          <p id="user-remark" class="text-xs text-slate-400 font-mono">Pasargad Net</p>
+        </div>
+      </div>
+      <div class="flex items-center gap-2">
+        <button id="theme-btn" class="w-8 h-8 rounded-xl bg-slate-800/80 hover:bg-slate-700 flex items-center justify-center text-slate-300 text-xs transition">
+          <i class="fa-regular fa-moon"></i>
+        </button>
+      </div>
+    </div>
 
-    if (typeof generateQrCode === 'function') {
-      generateQrCode(WORKER_SUB_URL);
-    }
+    <!-- بخش گیج مصرف و حجم باقیمانده -->
+    <div class="flex items-center justify-between gap-4 bg-[#0e1626] p-5 rounded-2xl border border-slate-800/60">
+      <div class="relative w-24 h-24 flex-shrink-0 flex items-center justify-center">
+        <svg class="w-full h-full circle-progress" viewBox="0 0 100 100">
+          <circle cx="50" cy="50" r="40" stroke="#1e293b" stroke-width="8" fill="transparent"/>
+          <circle id="usage-gauge" cx="50" cy="50" r="40" stroke="#38bdf8" stroke-width="8" stroke-linecap="round" fill="transparent" stroke-dasharray="251.2" stroke-dashoffset="240" class="circle-progress-bar"/>
+        </svg>
+        <div class="absolute flex flex-col items-center justify-center">
+          <span id="stat-percentage" class="text-sm font-bold text-white font-mono">0.0%</span>
+          <span class="text-[10px] text-slate-400">مصرف</span>
+        </div>
+      </div>
 
-    // ۲. ارسال درخواست به ورکر برای دریافت داده‌ها
-    const response = await fetch(WORKER_SUB_URL);
-    if (!response.ok) {
-      throw new Error(`خطای دریافت از ورکر: وضعیت ${response.status}`);
-    }
+      <div class="flex flex-col flex-grow text-left dir-ltr">
+        <span class="text-xs text-slate-400 uppercase tracking-wider">Remaining</span>
+        <div class="flex items-baseline gap-1 mt-0.5">
+          <span id="stat-remaining" class="text-2xl font-black text-white font-mono">--</span>
+        </div>
+        <span id="stat-total" class="text-xs text-slate-500 font-mono">of -- GB</span>
+      </div>
+    </div>
 
-    // ۳. پردازش هدر اطلاعات ترافیک کاربر (Subscription-Userinfo)
-    const userInfo = response.headers.get('subscription-userinfo');
-    if (userInfo) {
-      const stats = {};
-      userInfo.split(';').forEach(pair => {
-        const [k, v] = pair.trim().split('=');
-        if (k && v) stats[k] = parseInt(v, 10);
+    <!-- گرید مشخصات (روزهای باقیمانده، انقضا، دانلود، آپلود) -->
+    <div class="grid grid-cols-2 gap-3 text-xs">
+      <div class="bg-[#0e1626] p-3.5 rounded-2xl border border-slate-800/60">
+        <div class="text-slate-400 mb-1 text-[11px]">زمان باقیمانده</div>
+        <div class="flex items-baseline gap-1">
+          <span id="stat-days-left" class="text-base font-bold text-white font-mono">--</span>
+          <span class="text-[10px] text-slate-500">روز</span>
+        </div>
+      </div>
+
+      <div class="bg-[#0e1626] p-3.5 rounded-2xl border border-slate-800/60">
+        <div class="text-slate-400 mb-1 text-[11px]">تاریخ انقضا</div>
+        <div id="stat-expiry" class="text-xs font-semibold text-slate-200 font-mono">--</div>
+      </div>
+
+      <div class="bg-[#0e1626] p-3.5 rounded-2xl border border-slate-800/60">
+        <div class="text-slate-400 mb-1 text-[11px]">دانلود</div>
+        <div id="stat-download" class="text-xs font-semibold text-slate-200 font-mono">-- MB</div>
+      </div>
+
+      <div class="bg-[#0e1626] p-3.5 rounded-2xl border border-slate-800/60">
+        <div class="text-slate-400 mb-1 text-[11px]">آپلود</div>
+        <div id="stat-upload" class="text-xs font-semibold text-slate-200 font-mono">-- MB</div>
+      </div>
+    </div>
+
+    <!-- باکس لینک سابسکریپشن و دکمه کپی -->
+    <div class="space-y-2">
+      <label class="text-xs text-slate-400 font-medium flex items-center justify-between">
+        <span>لینک سابسکریپشن</span>
+        <span id="copy-status" class="text-emerald-400 text-[11px] hidden"><i class="fa-solid fa-check ml-1"></i>کپی شد</span>
+      </label>
+      <div class="flex items-center bg-[#0e1626] border border-slate-800 rounded-2xl p-1.5 focus-within:border-cyan-500/50 transition">
+        <span class="bg-cyan-500/10 text-cyan-400 text-xs px-2.5 py-1.5 rounded-xl font-bold font-mono ml-2 border border-cyan-500/20">SUB</span>
+        <input id="sub-url-input" type="text" readonly class="bg-transparent border-none outline-none text-xs text-slate-300 font-mono flex-grow px-1 truncate dir-ltr select-all" value="" />
+        <button id="copy-btn" class="bg-cyan-500 hover:bg-cyan-400 text-slate-950 px-3 py-1.5 rounded-xl text-xs font-semibold flex items-center gap-1 transition">
+          <i class="fa-regular fa-copy"></i>
+          <span>کپی</span>
+        </button>
+      </div>
+    </div>
+
+    <!-- کیوآرکد (QR Code) -->
+    <div class="bg-[#0e1626] border border-slate-800/80 rounded-2xl p-5 flex flex-col items-center justify-center space-y-3">
+      <div id="qrcode" class="p-2 bg-white rounded-xl shadow-lg"></div>
+      <p class="text-[11px] text-slate-400 text-center">این بارکد را در برنامه VPN گوشی خود اسکن کنید</p>
+    </div>
+
+    <!-- دکمه‌های اتصال سریع به برنامه‌ها -->
+    <div class="grid grid-cols-3 gap-2">
+      <button id="btn-v2ray" class="bg-slate-800/80 hover:bg-slate-700 py-2.5 rounded-xl text-xs font-medium text-slate-200 transition border border-slate-700/50 flex flex-col items-center gap-1">
+        <i class="fa-solid fa-paper-plane text-cyan-400"></i>
+        <span>v2rayNG</span>
+      </button>
+      <button id="btn-singbox" class="bg-slate-800/80 hover:bg-slate-700 py-2.5 rounded-xl text-xs font-medium text-slate-200 transition border border-slate-700/50 flex flex-col items-center gap-1">
+        <i class="fa-solid fa-box text-orange-400"></i>
+        <span>Sing-box</span>
+      </button>
+      <button id="btn-streisand" class="bg-slate-800/80 hover:bg-slate-700 py-2.5 rounded-xl text-xs font-medium text-slate-200 transition border border-slate-700/50 flex flex-col items-center gap-1">
+        <i class="fa-solid fa-shield text-emerald-400"></i>
+        <span>Streisand</span>
+      </button>
+    </div>
+
+    <!-- فوتر کوچک -->
+    <div class="text-center text-[10px] text-slate-600 font-mono pt-2">
+      Auto-updates every 12 hours • Pasargad UI
+    </div>
+
+  </div>
+
+  <script>
+    const WORKER_SUB_URL = "https://late-truth-84b6.phoenix1198811.workers.dev/sub/djMsMSwxNzg5OTQ1NTEy.d1JmvrNN3xP-emhSxOLdoOJuU8YZnBCPZp5pTJm3EnI";
+
+    // ساخت QR کد
+    function makeQR(url) {
+      const qrEl = document.getElementById("qrcode");
+      qrEl.innerHTML = "";
+      new QRCode(qrEl, {
+        text: url,
+        width: 140,
+        height: 140,
+        colorDark : "#000000",
+        colorLight : "#ffffff",
+        correctLevel : QRCode.CorrectLevel.M
       });
+    }
 
-      const upload = stats.upload || 0;
-      const download = stats.download || 0;
-      const total = stats.total || (10 * 1024 * 1024 * 1024); // ۱۰ گیگابایت به عنوان پیش‌فرض در صورت نبود هدر
-      const used = upload + download;
-      const remaining = Math.max(0, total - used);
-
-      const toGB = b => (b / (1024 ** 3)).toFixed(2);
-      const toMB = b => (b / (1024 ** 2)).toFixed(2);
-
-      // آپدیت متن‌های حجم و درصد روی کارت‌ها
-      const elRemaining = document.getElementById('stat-remaining');
-      if (elRemaining) elRemaining.innerText = toGB(remaining) + ' GB';
-
-      const elTotal = document.getElementById('stat-total');
-      if (elTotal) elTotal.innerText = 'of ' + toGB(total) + ' GB';
-
-      const elTotalQuota = document.getElementById('stat-total-quota');
-      if (elTotalQuota) elTotalQuota.innerText = toGB(total) + ' GB';
-
-      const elDown = document.getElementById('stat-download');
-      if (elDown) elDown.innerText = toMB(download) + ' MB';
-
-      const elUp = document.getElementById('stat-upload');
-      if (elUp) elUp.innerText = toMB(upload) + ' MB';
-
-      // محاسبه درصد و به‌روزرسانی گیج دایره‌ای
-      const percentage = total > 0 ? Math.min(100, (used / total) * 100).toFixed(1) : 0;
-      const elPercent = document.getElementById('stat-percentage');
-      if (elPercent) elPercent.innerText = percentage + '%';
-
+    // به‌روزرسانی گیج دایره‌ای
+    function updateGauge(percent) {
       const gauge = document.getElementById('usage-gauge');
-      if (gauge) {
-        const circumference = 2 * Math.PI * 40; // شعاع دایره r=40
-        const offset = circumference - (percentage / 100) * circumference;
-        gauge.style.strokeDasharray = `${circumference} ${circumference}`;
-        gauge.style.strokeDashoffset = offset;
+      const totalCircumference = 2 * Math.PI * 40; // 251.2
+      const offset = totalCircumference - (percent / 100) * totalCircumference;
+      gauge.style.strokeDashoffset = offset;
+    }
+
+    // دریافت داده‌ها
+    async function initPage() {
+      // مقداردهی اولیه اینپوت و QR
+      document.getElementById('sub-url-input').value = WORKER_SUB_URL;
+      makeQR(WORKER_SUB_URL);
+
+      // دکمه‌های ایمپورت سریع
+      document.getElementById('btn-v2ray').onclick = () => window.location.href = "v2rayng://install-config?url=" + encodeURIComponent(WORKER_SUB_URL);
+      document.getElementById('btn-singbox').onclick = () => window.location.href = "sing-box://import-remote-profile?url=" + encodeURIComponent(WORKER_SUB_URL);
+      document.getElementById('btn-streisand').onclick = () => window.location.href = "streisand://import/" + WORKER_SUB_URL;
+
+      // دکمه کپی
+      document.getElementById('copy-btn').onclick = () => {
+        navigator.clipboard.writeText(WORKER_SUB_URL);
+        const status = document.getElementById('copy-status');
+        status.classList.remove('hidden');
+        setTimeout(() => status.classList.add('hidden'), 2000);
+      };
+
+      try {
+        const res = await fetch(WORKER_SUB_URL);
+        const userInfo = res.headers.get('subscription-userinfo');
+        
+        if (userInfo) {
+          const data = {};
+          userInfo.split(';').forEach(item => {
+            const [k, v] = item.trim().split('=');
+            if (k && v) data[k] = parseInt(v, 10);
+          });
+
+          const up = data.upload || 0;
+          const down = data.download || 0;
+          const total = data.total || (10 * 1024 * 1024 * 1024);
+          const used = up + down;
+          const rem = Math.max(0, total - used);
+
+          const toGB = b => (b / (1024 ** 3)).toFixed(2);
+          const toMB = b => (b / (1024 ** 2)).toFixed(2);
+
+          document.getElementById('stat-remaining').innerText = toGB(rem) + ' GB';
+          document.getElementById('stat-total').innerText = 'of ' + toGB(total) + ' GB';
+          document.getElementById('stat-download').innerText = toMB(down) + ' MB';
+          document.getElementById('stat-upload').innerText = toMB(up) + ' MB';
+
+          const pct = total > 0 ? Math.min(100, (used / total) * 100).toFixed(1) : 0;
+          document.getElementById('stat-percentage').innerText = pct + '%';
+          updateGauge(pct);
+
+          if (data.expire) {
+            const exp = new Date(data.expire * 1000);
+            document.getElementById('stat-expiry').innerText = exp.toISOString().split('T')[0];
+            const d = Math.max(0, Math.ceil((exp - new Date()) / (1000 * 60 * 60 * 24)));
+            document.getElementById('stat-days-left').innerText = d;
+          }
+        }
+      } catch (e) {
+        console.log("ورکر هدر CORS ندارد یا داده خوانده نشد، اما لینک و QR آماده کار هستند.");
       }
-
-      // محاسبه زمان انقضا
-      if (stats.expire) {
-        const expDate = new Date(stats.expire * 1000);
-        const elExp = document.getElementById('stat-expiry');
-        if (elExp) elExp.innerText = expDate.toISOString().split('T')[0];
-
-        const days = Math.max(0, Math.ceil((expDate - new Date()) / (1000 * 60 * 60 * 24)));
-        const elDays = document.getElementById('stat-days-left');
-        if (elDays) elDays.innerText = days;
-      }
     }
 
-    // ۴. استخراج و دیکود کردن کانفیگ‌ها (Base64 به متن)
-    const rawBody = await response.text();
-    let decoded = rawBody;
-    try {
-      decoded = atob(rawBody.trim());
-    } catch (e) {
-      // اگر از قبل Base64 نبود یا متنی بود
-    }
-
-    const configs = decoded
-      .split('\n')
-      .map(c => c.trim())
-      .filter(c => c.startsWith('vless://') || c.startsWith('vmess://') || c.startsWith('trojan://') || c.startsWith('ss://'));
-
-    // ۵. رندر کانفیگ‌ها در تب کانفیگ‌ها
-    if (typeof renderConfigsList === 'function') {
-      renderConfigsList(configs);
-    }
-
-  } catch (err) {
-    console.error("خطا در همگام‌سازی اطلاعات با ورکر:", err);
-  }
-}
-
-// اجرای خودکار پس از بارگذاری کامل صفحه
-window.addEventListener('DOMContentLoaded', syncWorkerSubscription);
+    window.addEventListener('DOMContentLoaded', initPage);
+  </script>
+</body>
+</html>
