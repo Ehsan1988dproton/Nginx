@@ -562,7 +562,6 @@
       const userInfo = res.headers.get('subscription-userinfo');
       if (!userInfo) throw new Error("Missing subscription-userinfo header");
 
-      // وضعیت اتصال موفق (Online)
       statusBadge.className = "status-badge online";
       statusBadge.setAttribute('data-i18n', 'online');
       statusBadge.textContent = i18n[currentLang].online;
@@ -573,9 +572,10 @@
         if (k && v) stats[k] = parseInt(v, 10);
       });
 
-      const up = stats.upload || 0;
-      const down = stats.download || 0;
-      const total = stats.total || (10 * 1024 * 1024 * 1024);
+      // بررسی تمامی نام‌های احتمالی کلید آپلود در هدرها
+      const up = stats.upload || stats.ul || stats.up || 0;
+      const down = stats.download || stats.dl || stats.down || 0;
+      const total = stats.total || stats.t || (10 * 1024 * 1024 * 1024);
       const used = up + down;
       const rem = Math.max(0, total - used);
 
@@ -586,7 +586,13 @@
       document.getElementById('totalVal').textContent = toGB(total);
       document.getElementById('valTotal').textContent = toGB(total) + ' GB';
       document.getElementById('valDown').textContent = toGB(down) + ' GB';
-      document.getElementById('valUp').textContent = toMB(up) + ' MB';
+
+      // نمایش داینامیک آپلود (اگر بیشتر از ۱ مگابایت بود بر حسب MB وگرنه KB یا همان MB)
+      if (up >= (1024 * 1024)) {
+        document.getElementById('valUp').textContent = toMB(up) + ' MB';
+      } else {
+        document.getElementById('valUp').textContent = (up / (1024 ** 2)).toFixed(2) + ' MB';
+      }
 
       const pct = total > 0 ? Math.min(100, (used / total) * 100) : 0;
       setGauge(pct);
@@ -638,7 +644,6 @@
 
     } catch (err) {
       console.error('Data fetch error:', err);
-      // وضعیت آفلاین (قرمز) در صورت بروز هرگونه خطا یا قطعی ارتباط
       statusBadge.className = "status-badge offline";
       statusBadge.setAttribute('data-i18n', 'offline');
       statusBadge.textContent = i18n[currentLang].offline;
