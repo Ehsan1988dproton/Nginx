@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Subscription</title>
+  <title>Subscription info</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
@@ -14,7 +14,7 @@
   </script>
   <style>
     @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Vazirmatn:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap');
-    
+
     html[dir="rtl"] * {
       font-family: 'Vazirmatn', -apple-system, sans-serif !important;
     }
@@ -25,226 +25,273 @@
       font-family: 'JetBrains Mono', monospace !important;
     }
 
-    /* Dark Mode Theme */
-    .dark body { background-color: #0b0f19; color: #94a3b8; }
-    .dark .pg-main-card { background-color: #121826; border-color: #1e293b; }
-    .dark .pg-cell { background-color: #162032; border-color: #202d44; }
-    .dark .pg-text-primary { color: #f8fafc; }
-    .dark .pg-text-secondary { color: #94a3b8; }
-    .dark .pg-text-muted { color: #64748b; }
-    .dark .pg-track { stroke: #1f2c42; }
+    /* Dark Mode with exact purple ambient glow as in image 2 */
+    .dark body {
+      background-color: #0c0d14;
+      background-image: 
+        radial-gradient(at 0% 0%, rgba(99, 102, 241, 0.12) 0px, transparent 50%),
+        radial-gradient(at 100% 100%, rgba(139, 92, 246, 0.08) 0px, transparent 50%);
+      color: #94a3b8;
+    }
+    .dark .main-wrapper {
+      background-color: rgba(18, 20, 31, 0.95);
+      border: 1px solid rgba(255, 255, 255, 0.07);
+      box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.6);
+    }
+    .dark .card-cell {
+      background-color: #171a29;
+      border: 1px solid rgba(255, 255, 255, 0.05);
+    }
+    .dark .card-cell:hover {
+      border-color: rgba(255, 255, 255, 0.1);
+    }
+    .dark .track-circle { stroke: #23273c; }
 
-    /* Light Mode Theme */
-    body { background-color: #f1f5f9; color: #475569; transition: background-color 0.3s ease; }
-    .pg-main-card { background-color: #ffffff; border: 1px solid #e2e8f0; transition: all 0.3s ease; }
-    .pg-cell { background-color: #f8fafc; border: 1px solid #e2e8f0; transition: all 0.3s ease; }
-    .pg-text-primary { color: #0f172a; }
-    .pg-text-secondary { color: #475569; }
-    .pg-text-muted { color: #94a3b8; }
-    .pg-track { stroke: #e2e8f0; }
+    /* Light Mode */
+    body {
+      background-color: #f3f4f8;
+      color: #475569;
+      transition: all 0.3s ease;
+    }
+    .main-wrapper {
+      background-color: #ffffff;
+      border: 1px solid #e2e8f0;
+      box-shadow: 0 20px 30px -10px rgba(0, 0, 0, 0.08);
+      transition: all 0.3s ease;
+    }
+    .card-cell {
+      background-color: #f8fafc;
+      border: 1px solid #e2e8f0;
+      transition: all 0.3s ease;
+    }
+    .track-circle { stroke: #e2e8f0; }
 
     .gauge-circle {
       transform: rotate(-90deg);
       transform-origin: 50% 50%;
     }
     .gauge-progress {
-      transition: stroke-dashoffset 0.8s ease;
+      transition: stroke-dashoffset 0.8s cubic-bezier(0.4, 0, 0.2, 1);
     }
   </style>
 </head>
-<body class="min-h-screen flex items-center justify-center p-2 sm:p-6 select-none">
+<body class="min-h-screen flex items-center justify-center p-3 sm:p-6 select-none">
 
   <!-- Main PasarGuard Card Container -->
-  <div class="w-full max-w-[540px] pg-main-card rounded-[28px] p-6 sm:p-7 shadow-2xl space-y-5 relative">
+  <div class="w-full max-w-[620px] main-wrapper rounded-[24px] p-6 sm:p-8 space-y-6 relative">
 
-    <!-- Top Header -->
-    <div class="flex items-center justify-between pb-1">
-      <div class="flex items-center gap-3">
-        <div class="w-10 h-10 rounded-2xl bg-cyan-500/10 border border-cyan-500/25 flex items-center justify-center text-cyan-400">
+    <!-- Header Section -->
+    <div class="flex items-center justify-between">
+      <div class="flex items-center gap-3.5">
+        <div class="w-10 h-10 rounded-2xl bg-cyan-500 flex items-center justify-center text-slate-950 shadow-md shadow-cyan-500/20">
           <i class="fa-solid fa-wifi text-sm"></i>
         </div>
         <div>
-          <h1 data-i18n="sub_info_title" class="text-sm font-bold pg-text-primary tracking-wide">Subscription info</h1>
-          <p id="sub-remark" class="text-[11px] pg-text-muted font-mono">8eaf3wq0tewcs06f - Test ❤️</p>
+          <h1 data-i18n="title" class="text-sm font-bold text-white tracking-wide">Subscription info</h1>
+          <p id="client-remark" class="text-[11px] text-slate-400 font-mono tracking-tight">8eaf3wq0tewcs06f - Test ❤️</p>
         </div>
       </div>
       
-      <!-- Actions: Theme and Settings (Language) -->
+      <!-- Theme & Language Controllers -->
       <div class="flex items-center gap-2 relative">
-        <button id="btn-theme-toggle" class="w-8 h-8 rounded-xl pg-cell hover:opacity-80 flex items-center justify-center pg-text-secondary text-xs transition">
-          <i id="theme-icon" class="fa-regular fa-moon"></i>
+        <button id="theme-btn" class="w-8 h-8 rounded-xl card-cell flex items-center justify-center text-slate-400 hover:text-white transition">
+          <i id="theme-icon" class="fa-regular fa-moon text-xs"></i>
         </button>
-        <button id="btn-lang-modal" class="w-8 h-8 rounded-xl pg-cell hover:opacity-80 flex items-center justify-center pg-text-secondary text-xs transition">
-          <i class="fa-solid fa-sliders"></i>
+        <button id="lang-btn" class="w-8 h-8 rounded-xl card-cell flex items-center justify-center text-slate-400 hover:text-white transition">
+          <i class="fa-solid fa-sliders text-xs"></i>
         </button>
 
-        <!-- Language Dropdown Menu -->
-        <div id="lang-dropdown" class="hidden absolute top-10 ltr:right-0 rtl:left-0 z-50 w-36 pg-cell rounded-2xl p-1.5 shadow-xl border space-y-1">
-          <button onclick="setLanguage('en')" class="w-full text-left px-3 py-1.5 text-xs rounded-xl hover:bg-cyan-500/10 hover:text-cyan-400 pg-text-primary flex items-center justify-between transition">
+        <!-- Language Modal/Dropdown -->
+        <div id="lang-menu" class="hidden absolute top-10 ltr:right-0 rtl:left-0 z-50 w-36 card-cell rounded-2xl p-1.5 shadow-2xl border space-y-1">
+          <button onclick="changeLang('en')" class="w-full text-left px-3 py-1.5 text-xs rounded-xl hover:bg-cyan-500/10 hover:text-cyan-400 text-slate-200 flex items-center justify-between transition">
             <span>English</span>
-            <i class="fa-solid fa-check text-[10px] text-cyan-400 lang-check-en"></i>
+            <i class="fa-solid fa-check text-[10px] text-cyan-400 check-en"></i>
           </button>
-          <button onclick="setLanguage('fa')" class="w-full text-right px-3 py-1.5 text-xs rounded-xl hover:bg-cyan-500/10 hover:text-cyan-400 pg-text-primary flex items-center justify-between transition">
+          <button onclick="changeLang('fa')" class="w-full text-right px-3 py-1.5 text-xs rounded-xl hover:bg-cyan-500/10 hover:text-cyan-400 text-slate-200 flex items-center justify-between transition">
             <span>فارسی</span>
-            <i class="fa-solid fa-check text-[10px] text-cyan-400 lang-check-fa hidden"></i>
+            <i class="fa-solid fa-check text-[10px] text-cyan-400 check-fa hidden"></i>
           </button>
         </div>
       </div>
     </div>
 
-    <!-- Main Quota & Stats Section (Exact PasarGuard Grid) -->
-    <div class="grid grid-cols-12 gap-3.5">
+    <!-- Exact PasarGuard Grid Structure (Left: Circle Gauge | Right: Quota & Details) -->
+    <div class="flex flex-col sm:flex-row gap-5 items-start">
       
-      <!-- Left Column: Circular Usage Gauge & Remaining Quota -->
-      <div class="col-span-12 sm:col-span-5 pg-cell rounded-2xl p-4 flex flex-col items-center justify-center text-center">
-        <span data-i18n="remaining" class="text-[10px] pg-text-muted uppercase tracking-widest font-semibold mb-1">Remaining</span>
-        <div class="flex items-baseline gap-1 my-0.5 dir-ltr">
-          <span id="stat-remaining" class="text-3xl font-extrabold pg-text-primary font-mono leading-none">--</span>
-          <span class="text-xs font-bold pg-text-muted font-mono">GB</span>
-        </div>
-        <span id="stat-total-quota-text" class="text-[10px] pg-text-muted font-mono mb-3 dir-ltr">of -- GB</span>
-
-        <!-- Circular Gauge -->
-        <div class="relative w-24 h-24 flex items-center justify-center">
-          <svg class="w-full h-full gauge-circle" viewBox="0 0 100 100">
-            <circle cx="50" cy="50" r="40" stroke-width="7" fill="transparent" class="pg-track"/>
-            <circle id="usage-circle" cx="50" cy="50" r="40" stroke="#38bdf8" stroke-width="7" stroke-linecap="round" fill="transparent" stroke-dasharray="251.2" stroke-dashoffset="251.2" class="gauge-progress"/>
-          </svg>
-          <div class="absolute flex flex-col items-center justify-center">
-            <span id="stat-percentage" class="text-sm font-bold pg-text-primary font-mono">0.0%</span>
-            <span data-i18n="usage" class="text-[9px] pg-text-muted font-medium">Usage</span>
-          </div>
+      <!-- Left: Circular Gauge Alone -->
+      <div class="relative w-32 h-32 flex-shrink-0 flex items-center justify-center self-center sm:self-auto">
+        <svg class="w-full h-full gauge-circle" viewBox="0 0 100 100">
+          <circle cx="50" cy="50" r="40" stroke-width="7" fill="transparent" class="track-circle"/>
+          <circle id="gauge-bar" cx="50" cy="50" r="40" stroke="#a78bfa" stroke-width="7" stroke-linecap="round" fill="transparent" stroke-dasharray="251.2" stroke-dashoffset="251.2" class="gauge-progress"/>
+        </svg>
+        <div class="absolute flex flex-col items-center justify-center text-center">
+          <span id="stat-percentage" class="text-lg font-bold text-white font-mono leading-none">0.0%</span>
+          <span data-i18n="usage" class="text-[10px] text-slate-400 mt-1 font-medium">Usage</span>
         </div>
       </div>
 
-      <!-- Right Column: Status Cards & Metrics -->
-      <div class="col-span-12 sm:col-span-7 flex flex-col justify-between gap-2.5">
+      <!-- Right: Remaining Banner + 3 Rows of Metrics -->
+      <div class="flex-grow w-full space-y-3">
         
-        <!-- Row 1: Days left, Expiry, Status -->
-        <div class="grid grid-cols-3 gap-2">
-          <div class="pg-cell rounded-xl p-2.5">
-            <div data-i18n="days_left" class="text-[10px] pg-text-muted">Days left</div>
-            <div id="stat-days" class="text-sm font-bold pg-text-primary font-mono mt-0.5">--</div>
+        <!-- Remaining Quota -->
+        <div class="flex flex-col">
+          <span data-i18n="remaining" class="text-[10px] text-slate-400 uppercase tracking-widest font-medium">Remaining</span>
+          <div class="flex items-baseline gap-1.5 mt-0.5 dir-ltr">
+            <span id="stat-remaining" class="text-3xl sm:text-4xl font-black text-white font-mono tracking-tight">--</span>
+            <span class="text-sm font-bold text-slate-400 font-mono">GB</span>
           </div>
-          <div class="pg-cell rounded-xl p-2.5">
-            <div data-i18n="expiry" class="text-[10px] pg-text-muted">Expiry</div>
-            <div id="stat-expiry" class="text-[11px] font-semibold pg-text-primary font-mono mt-0.5 truncate dir-ltr">--</div>
-          </div>
-          <div class="pg-cell rounded-xl p-2.5">
-            <div data-i18n="status" class="text-[10px] pg-text-muted">Status</div>
-            <div class="mt-0.5">
-              <span data-i18n="active" class="inline-block px-1.5 py-0.2 rounded text-[10px] font-semibold bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">Active</span>
+          <span id="stat-total-quota-text" class="text-[11px] text-slate-500 font-mono dir-ltr">of -- GB</span>
+        </div>
+
+        <!-- Metrics Grid (3x3 Cards exactly as in image 2) -->
+        <div class="space-y-2 text-xs">
+          <!-- Row 1: Days left, Expiry, Status -->
+          <div class="grid grid-cols-3 gap-2">
+            <div class="card-cell rounded-xl p-2.5">
+              <div data-i18n="days_left" class="text-[10px] text-slate-400">Days left</div>
+              <div id="stat-days" class="text-xs font-bold text-white font-mono mt-1">--</div>
+            </div>
+            <div class="card-cell rounded-xl p-2.5 col-span-1">
+              <div data-i18n="expiry" class="text-[10px] text-slate-400">Expiry</div>
+              <div id="stat-expiry" class="text-[10px] font-semibold text-slate-200 font-mono mt-1 truncate dir-ltr">--</div>
+            </div>
+            <div class="card-cell rounded-xl p-2.5">
+              <div data-i18n="status" class="text-[10px] text-slate-400">Status</div>
+              <div class="mt-1">
+                <span data-i18n="active" class="inline-block px-2 py-0.5 rounded text-[10px] font-semibold bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">Active</span>
+              </div>
             </div>
           </div>
-        </div>
 
-        <!-- Row 2: Downloaded, Uploaded, Total Quota -->
-        <div class="grid grid-cols-3 gap-2">
-          <div class="pg-cell rounded-xl p-2.5">
-            <div data-i18n="downloaded" class="text-[10px] pg-text-muted">Downloaded</div>
-            <div id="stat-download" class="text-[11px] font-semibold pg-text-primary font-mono mt-0.5 dir-ltr">-- MB</div>
+          <!-- Row 2: Downloaded, Uploaded, Total quota -->
+          <div class="grid grid-cols-3 gap-2">
+            <div class="card-cell rounded-xl p-2.5">
+              <div data-i18n="downloaded" class="text-[10px] text-slate-400">Downloaded</div>
+              <div id="stat-download" class="text-[11px] font-semibold text-slate-200 font-mono mt-1 dir-ltr">-- MB</div>
+            </div>
+            <div class="card-cell rounded-xl p-2.5">
+              <div data-i18n="uploaded" class="text-[10px] text-slate-400">Uploaded</div>
+              <div id="stat-upload" class="text-[11px] font-semibold text-slate-200 font-mono mt-1 dir-ltr">-- MB</div>
+            </div>
+            <div class="card-cell rounded-xl p-2.5">
+              <div data-i18n="total_quota" class="text-[10px] text-slate-400">Total quota</div>
+              <div id="stat-total-quota" class="text-[11px] font-semibold text-slate-200 font-mono mt-1 dir-ltr">-- GB</div>
+            </div>
           </div>
-          <div class="pg-cell rounded-xl p-2.5">
-            <div data-i18n="uploaded" class="text-[10px] pg-text-muted">Uploaded</div>
-            <div id="stat-upload" class="text-[11px] font-semibold pg-text-primary font-mono mt-0.5 dir-ltr">-- MB</div>
-          </div>
-          <div class="pg-cell rounded-xl p-2.5">
-            <div data-i18n="total_quota" class="text-[10px] pg-text-muted">Total quota</div>
-            <div id="stat-total-quota" class="text-[11px] font-semibold pg-text-primary font-mono mt-0.5 dir-ltr">-- GB</div>
-          </div>
-        </div>
 
-        <!-- Row 3: Last Online -->
-        <div class="pg-cell rounded-xl p-2.5">
-          <div data-i18n="last_online" class="text-[10px] pg-text-muted">Last Online</div>
-          <div id="stat-last-online" class="text-[11px] font-semibold pg-text-primary font-mono mt-0.5 dir-ltr">--</div>
+          <!-- Row 3: Last Online -->
+          <div class="card-cell rounded-xl p-2.5">
+            <div data-i18n="last_online" class="text-[10px] text-slate-400">Last Online</div>
+            <div id="stat-last-online" class="text-[11px] font-semibold text-slate-200 font-mono mt-1 dir-ltr">--</div>
+          </div>
         </div>
 
       </div>
-
     </div>
 
     <!-- Navigation Tabs -->
-    <div class="flex items-center gap-5 border-b dark:border-slate-800 border-slate-200 text-xs font-medium pt-1">
-      <button id="tab-btn-sub" onclick="showTab('sub')" class="pb-2.5 text-cyan-400 border-b-2 border-cyan-400 flex items-center gap-1.5 transition">
+    <div class="flex items-center gap-6 border-b dark:border-slate-800/80 border-slate-200 text-xs font-medium pt-2">
+      <button id="nav-sub" onclick="selectTab('sub')" class="pb-3 text-cyan-400 border-b-2 border-cyan-400 flex items-center gap-2 transition">
         <i class="fa-solid fa-link text-[11px]"></i>
         <span data-i18n="tab_sub">Subscription</span>
       </button>
-      <button id="tab-btn-apps" onclick="showTab('apps')" class="pb-2.5 pg-text-muted hover:pg-text-primary flex items-center gap-1.5 transition">
+      <button id="nav-apps" onclick="selectTab('apps')" class="pb-3 text-slate-400 hover:text-white flex items-center gap-2 transition">
         <i class="fa-solid fa-shapes text-[11px]"></i>
         <span data-i18n="tab_apps">Apps</span>
       </button>
-      <button id="tab-btn-configs" onclick="showTab('configs')" class="pb-2.5 pg-text-muted hover:pg-text-primary flex items-center gap-1.5 transition">
+      <button id="nav-configs" onclick="selectTab('configs')" class="pb-3 text-slate-400 hover:text-white flex items-center gap-2 transition">
         <i class="fa-solid fa-bars-staggered text-[11px]"></i>
         <span data-i18n="tab_configs">Configs</span>
-        <span id="configs-badge" class="bg-slate-800/80 text-slate-300 text-[9px] px-1.5 py-0.2 rounded-full font-mono">0</span>
+        <span id="badge-configs" class="bg-[#24283b] text-slate-300 text-[9px] px-1.5 py-0.2 rounded-full font-mono">0</span>
       </button>
     </div>
 
-    <!-- Tab 1: Subscription -->
-    <div id="tab-sub" class="space-y-3.5">
-      <!-- Input bar -->
-      <div class="pg-cell p-2 rounded-2xl flex items-center gap-2">
-        <span class="bg-emerald-500/15 text-emerald-400 text-[10px] px-2 py-1 rounded-xl font-bold font-mono border border-emerald-500/20">SUB</span>
-        <input id="sub-input" type="text" readonly class="bg-transparent border-none outline-none text-xs pg-text-primary font-mono flex-grow truncate px-1 select-all dir-ltr" value="" />
-        <button id="btn-copy" class="w-8 h-8 rounded-xl pg-cell hover:opacity-80 flex items-center justify-center pg-text-secondary transition" title="Copy link">
-          <i class="fa-regular fa-copy text-xs"></i>
-        </button>
+    <!-- Content: Subscription -->
+    <div id="pane-sub" class="space-y-3.5">
+      
+      <!-- Copy Link Box (Exact PasarGuard 2-row layout) -->
+      <div class="card-cell p-3.5 rounded-2xl space-y-1.5">
+        <div class="flex items-center justify-between">
+          <div class="flex items-center gap-2">
+            <span class="bg-emerald-500/15 text-emerald-400 text-[10px] px-2 py-0.5 rounded-md font-bold font-mono border border-emerald-500/25">SUB</span>
+            <span data-i18n="tab_sub" class="text-xs font-semibold text-white">Subscription</span>
+          </div>
+          <div class="flex items-center gap-1">
+            <button id="copy-btn" class="w-7 h-7 rounded-lg card-cell hover:opacity-80 flex items-center justify-center text-slate-300 transition" title="Copy">
+              <i class="fa-regular fa-copy text-xs"></i>
+            </button>
+            <button id="qr-modal-btn" class="w-7 h-7 rounded-lg card-cell hover:opacity-80 flex items-center justify-center text-slate-300 transition" title="QR">
+              <i class="fa-solid fa-qrcode text-xs"></i>
+            </button>
+          </div>
+        </div>
+        <div id="sub-url-text" class="text-[11px] text-slate-400 font-mono truncate dir-ltr select-all">
+          Loading...
+        </div>
       </div>
 
-      <!-- QR Code matching PasarGuard original -->
-      <div class="pg-cell p-4 rounded-2xl flex items-center gap-5">
+      <!-- Integrated QR Banner -->
+      <div class="card-cell p-4 rounded-2xl flex items-center gap-5">
         <div class="p-2 bg-white rounded-xl flex-shrink-0 shadow-md">
           <div id="qrcode"></div>
         </div>
         <div class="space-y-1">
-          <h4 data-i18n="qr_title" class="text-xs font-bold pg-text-primary">Scan with your phone</h4>
-          <p data-i18n="qr_desc" class="text-[11px] pg-text-muted leading-relaxed">Scan this code in your VPN app to add the subscription without copying the link.</p>
+          <h4 data-i18n="qr_title" class="text-xs font-bold text-white">Scan with your phone</h4>
+          <p data-i18n="qr_desc" class="text-[11px] text-slate-400 leading-relaxed">Scan this code in your VPN app to add the subscription without copying the link.</p>
         </div>
       </div>
+
     </div>
 
-    <!-- Tab 2: Apps -->
-    <div id="tab-apps" class="hidden grid grid-cols-2 gap-2.5 text-xs">
-      <a id="app-v2rayng" href="#" class="pg-cell p-3 rounded-2xl hover:border-cyan-500/40 transition flex items-center gap-3">
-        <i class="fa-solid fa-paper-plane text-cyan-400 text-sm"></i>
+    <!-- Content: Apps -->
+    <div id="pane-apps" class="hidden grid grid-cols-1 sm:grid-cols-2 gap-2.5 text-xs">
+      <a id="app-v2rayng" href="#" class="card-cell p-3.5 rounded-2xl hover:border-cyan-500/40 transition flex items-center gap-3">
+        <div class="w-8 h-8 rounded-xl bg-cyan-500/10 flex items-center justify-center text-cyan-400">
+          <i class="fa-solid fa-paper-plane text-xs"></i>
+        </div>
         <div>
-          <div class="font-bold pg-text-primary text-xs">v2rayNG</div>
-          <div class="text-[10px] pg-text-muted">Android</div>
+          <div class="font-bold text-white text-xs">v2rayNG</div>
+          <div class="text-[10px] text-slate-400">Android Client</div>
         </div>
       </a>
-      <a id="app-singbox" href="#" class="pg-cell p-3 rounded-2xl hover:border-cyan-500/40 transition flex items-center gap-3">
-        <i class="fa-solid fa-box text-orange-400 text-sm"></i>
+      <a id="app-singbox" href="#" class="card-cell p-3.5 rounded-2xl hover:border-orange-500/40 transition flex items-center gap-3">
+        <div class="w-8 h-8 rounded-xl bg-orange-500/10 flex items-center justify-center text-orange-400">
+          <i class="fa-solid fa-box text-xs"></i>
+        </div>
         <div>
-          <div class="font-bold pg-text-primary text-xs">Sing-box</div>
-          <div class="text-[10px] pg-text-muted">Cross Platform</div>
+          <div class="font-bold text-white text-xs">Sing-box</div>
+          <div class="text-[10px] text-slate-400">Universal Core</div>
         </div>
       </a>
-      <a id="app-streisand" href="#" class="pg-cell p-3 rounded-2xl hover:border-cyan-500/40 transition flex items-center gap-3">
-        <i class="fa-solid fa-shield text-emerald-400 text-sm"></i>
+      <a id="app-streisand" href="#" class="card-cell p-3.5 rounded-2xl hover:border-emerald-500/40 transition flex items-center gap-3">
+        <div class="w-8 h-8 rounded-xl bg-emerald-500/10 flex items-center justify-center text-emerald-400">
+          <i class="fa-solid fa-shield text-xs"></i>
+        </div>
         <div>
-          <div class="font-bold pg-text-primary text-xs">Streisand</div>
-          <div class="text-[10px] pg-text-muted">iOS</div>
+          <div class="font-bold text-white text-xs">Streisand</div>
+          <div class="text-[10px] text-slate-400">iOS Client</div>
         </div>
       </a>
-      <a id="app-shadowrocket" href="#" class="pg-cell p-3 rounded-2xl hover:border-cyan-500/40 transition flex items-center gap-3">
-        <i class="fa-solid fa-rocket text-purple-400 text-sm"></i>
+      <a id="app-shadowrocket" href="#" class="card-cell p-3.5 rounded-2xl hover:border-purple-500/40 transition flex items-center gap-3">
+        <div class="w-8 h-8 rounded-xl bg-purple-500/10 flex items-center justify-center text-purple-400">
+          <i class="fa-solid fa-rocket text-xs"></i>
+        </div>
         <div>
-          <div class="font-bold pg-text-primary text-xs">Shadowrocket</div>
-          <div class="text-[10px] pg-text-muted">iOS</div>
+          <div class="font-bold text-white text-xs">Shadowrocket</div>
+          <div class="text-[10px] text-slate-400">iOS Client</div>
         </div>
       </a>
     </div>
 
-    <!-- Tab 3: Configs -->
-    <div id="tab-configs" class="hidden space-y-2">
-      <div id="configs-container" class="space-y-1.5 text-xs max-h-64 overflow-y-auto pr-1">
-        <div data-i18n="loading_nodes" class="text-center py-6 pg-text-muted font-mono">Loading nodes...</div>
+    <!-- Content: Configs -->
+    <div id="pane-configs" class="hidden space-y-2">
+      <div id="configs-container" class="space-y-1.5 text-xs max-h-60 overflow-y-auto pr-1">
+        <div data-i18n="loading_nodes" class="text-center py-6 text-slate-500 font-mono">Loading nodes...</div>
       </div>
     </div>
 
     <!-- Footer -->
-    <div class="text-[10px] pg-text-muted font-mono pt-1 flex items-center justify-between">
+    <div class="text-[10px] text-slate-500 font-mono pt-1 flex items-center justify-between">
       <div>
         <i class="fa-solid fa-rotate text-[9px] mr-1"></i> <span data-i18n="auto_updates">Auto-updates every 12 hours</span>
       </div>
@@ -256,10 +303,9 @@
   <script>
     const SUB_URL = "https://late-truth-84b6.phoenix1198811.workers.dev/sub/djMsMSwxNzg5OTQ1NTEy.d1JmvrNN3xP-emhSxOLdoOJuU8YZnBCPZp5pTJm3EnI";
 
-    // Dictionary for Multi-language Support
-    const i18n = {
+    const dict = {
       en: {
-        sub_info_title: "Subscription info",
+        title: "Subscription info",
         remaining: "Remaining",
         usage: "Usage",
         days_left: "Days left",
@@ -278,11 +324,10 @@
         auto_updates: "Auto-updates every 12 hours",
         loading_nodes: "Loading nodes...",
         copied: "Subscription link copied!",
-        config_copied: "Config copied!",
         of: "of"
       },
       fa: {
-        sub_info_title: "اطلاعات سابسکریپشن",
+        title: "اطلاعات سابسکریپشن",
         remaining: "باقیمانده",
         usage: "مصرف",
         days_left: "روزهای مانده",
@@ -299,117 +344,107 @@
         qr_title: "اسکن با گوشی",
         qr_desc: "این بارکد را در برنامه VPN خود اسکن کنید تا اشتراک بدون نیاز به کپی اضافه شود.",
         auto_updates: "بروزرسانی خودکار هر ۱۲ ساعت",
-        loading_nodes: "در حال دریافت کانفیگ‌ها...",
-        copied: "لینک اشتراک با موفقیت کپی شد!",
-        config_copied: "کانفیگ کپی شد!",
+        loading_nodes: "در حال بارگذاری...",
+        copied: "لینک با موفقیت کپی شد!",
         of: "از"
       }
     };
 
-    let currentLang = localStorage.getItem('pg_lang') || 'en';
+    let activeLang = localStorage.getItem('pg_lang') || 'en';
 
-    function setLanguage(lang) {
-      currentLang = lang;
+    function changeLang(lang) {
+      activeLang = lang;
       localStorage.setItem('pg_lang', lang);
       document.documentElement.lang = lang;
       document.documentElement.dir = (lang === 'fa') ? 'rtl' : 'ltr';
 
-      // Update text in DOM
       document.querySelectorAll('[data-i18n]').forEach(el => {
-        const key = el.getAttribute('data-i18n');
-        if (i18n[lang][key]) {
-          el.innerText = i18n[lang][key];
-        }
+        const k = el.getAttribute('data-i18n');
+        if (dict[lang][k]) el.innerText = dict[lang][k];
       });
 
-      // Update checks
-      document.querySelector('.lang-check-en').classList.toggle('hidden', lang !== 'en');
-      document.querySelector('.lang-check-fa').classList.toggle('hidden', lang !== 'fa');
-
-      // Close dropdown
-      document.getElementById('lang-dropdown').classList.add('hidden');
+      document.querySelector('.check-en').classList.toggle('hidden', lang !== 'en');
+      document.querySelector('.check-fa').classList.toggle('hidden', lang !== 'fa');
+      document.getElementById('lang-menu').classList.add('hidden');
     }
 
-    // Theme Switcher Logic
-    function initTheme() {
+    // Theme Switch
+    function setupTheme() {
       const isDark = localStorage.getItem('pg_theme') !== 'light';
       if (isDark) {
         document.documentElement.classList.add('dark');
-        document.getElementById('theme-icon').className = 'fa-regular fa-moon';
+        document.getElementById('theme-icon').className = 'fa-regular fa-moon text-xs';
       } else {
         document.documentElement.classList.remove('dark');
-        document.getElementById('theme-icon').className = 'fa-regular fa-sun';
+        document.getElementById('theme-icon').className = 'fa-regular fa-sun text-xs';
       }
     }
 
-    document.getElementById('btn-theme-toggle').onclick = () => {
-      const isCurrentlyDark = document.documentElement.classList.contains('dark');
-      if (isCurrentlyDark) {
+    document.getElementById('theme-btn').onclick = () => {
+      const isDark = document.documentElement.classList.contains('dark');
+      if (isDark) {
         document.documentElement.classList.remove('dark');
         localStorage.setItem('pg_theme', 'light');
-        document.getElementById('theme-icon').className = 'fa-regular fa-sun';
+        document.getElementById('theme-icon').className = 'fa-regular fa-sun text-xs';
       } else {
         document.documentElement.classList.add('dark');
         localStorage.setItem('pg_theme', 'dark');
-        document.getElementById('theme-icon').className = 'fa-regular fa-moon';
+        document.getElementById('theme-icon').className = 'fa-regular fa-moon text-xs';
       }
     };
 
-    // Toggle Language Dropdown
-    document.getElementById('btn-lang-modal').onclick = (e) => {
+    document.getElementById('lang-btn').onclick = (e) => {
       e.stopPropagation();
-      document.getElementById('lang-dropdown').classList.toggle('hidden');
+      document.getElementById('lang-menu').classList.toggle('hidden');
     };
-
     document.addEventListener('click', () => {
-      document.getElementById('lang-dropdown').classList.add('hidden');
+      document.getElementById('lang-menu').classList.add('hidden');
     });
 
-    // Tab Navigation
-    function showTab(name) {
-      ['sub', 'apps', 'configs'].forEach(t => {
-        document.getElementById('tab-' + t).classList.add('hidden');
-        document.getElementById('tab-btn-' + t).className = 'pb-2.5 pg-text-muted hover:pg-text-primary flex items-center gap-1.5 transition';
+    function selectTab(t) {
+      ['sub', 'apps', 'configs'].forEach(name => {
+        document.getElementById('pane-' + name).classList.add('hidden');
+        document.getElementById('nav-' + name).className = 'pb-3 text-slate-400 hover:text-white flex items-center gap-2 transition';
       });
-      document.getElementById('tab-' + name).classList.remove('hidden');
-      document.getElementById('tab-btn-' + name).className = 'pb-2.5 text-cyan-400 border-b-2 border-cyan-400 flex items-center gap-1.5 transition';
+      document.getElementById('pane-' + t).classList.remove('hidden');
+      document.getElementById('nav-' + t).className = 'pb-3 text-cyan-400 border-b-2 border-cyan-400 flex items-center gap-2 transition';
     }
 
-    function makeQR(url) {
+    function createQR(text) {
       const el = document.getElementById("qrcode");
       el.innerHTML = "";
       new QRCode(el, {
-        text: url,
-        width: 110,
-        height: 110,
+        text: text,
+        width: 105,
+        height: 105,
         colorDark : "#000000",
         colorLight : "#ffffff",
         correctLevel : QRCode.CorrectLevel.M
       });
     }
 
-    function setCircle(percent) {
-      const el = document.getElementById('usage-circle');
-      const circumference = 2 * Math.PI * 40; // 251.2
-      const offset = circumference - (percent / 100) * circumference;
-      el.style.strokeDashoffset = offset;
+    function updateGauge(pct) {
+      const bar = document.getElementById('gauge-bar');
+      const c = 2 * Math.PI * 40; // 251.2
+      const offset = c - (pct / 100) * c;
+      bar.style.strokeDashoffset = offset;
     }
 
-    async function init() {
-      initTheme();
-      setLanguage(currentLang);
+    async function start() {
+      setupTheme();
+      changeLang(activeLang);
 
-      document.getElementById('sub-input').value = SUB_URL;
-      makeQR(SUB_URL);
+      document.getElementById('sub-url-text').innerText = SUB_URL;
+      createQR(SUB_URL);
 
       document.getElementById('app-v2rayng').href = "v2rayng://install-config?url=" + encodeURIComponent(SUB_URL);
       document.getElementById('app-singbox').href = "sing-box://import-remote-profile?url=" + encodeURIComponent(SUB_URL);
       document.getElementById('app-streisand').href = "streisand://import/" + SUB_URL;
       document.getElementById('app-shadowrocket').href = "sub://" + btoa(SUB_URL);
 
-      document.getElementById('btn-copy').onclick = () => {
+      document.getElementById('copy-btn').onclick = () => {
         navigator.clipboard.writeText(SUB_URL);
-        alert(i18n[currentLang].copied);
+        alert(dict[activeLang].copied);
       };
 
       const now = new Date();
@@ -423,8 +458,8 @@
 
         if (userInfo) {
           const s = {};
-          userInfo.split(';').forEach(item => {
-            const [k, v] = item.trim().split('=');
+          userInfo.split(';').forEach(i => {
+            const [k, v] = i.trim().split('=');
             if (k && v) s[k] = parseInt(v, 10);
           });
 
@@ -438,14 +473,14 @@
           const toMB = b => (b / (1024 ** 2)).toFixed(2);
 
           document.getElementById('stat-remaining').innerText = toGB(rem);
-          document.getElementById('stat-total-quota-text').innerText = `${i18n[currentLang].of} ${toGB(total)} GB`;
+          document.getElementById('stat-total-quota-text').innerText = `${dict[activeLang].of} ${toGB(total)} GB`;
           document.getElementById('stat-total-quota').innerText = toGB(total) + ' GB';
           document.getElementById('stat-download').innerText = toMB(down) + ' MB';
           document.getElementById('stat-upload').innerText = toMB(up) + ' MB';
 
           const pct = total > 0 ? Math.min(100, (used / total) * 100).toFixed(1) : 0;
           document.getElementById('stat-percentage').innerText = pct + '%';
-          setCircle(pct);
+          updateGauge(pct);
 
           if (s.expire) {
             const exp = new Date(s.expire * 1000);
@@ -461,23 +496,23 @@
         try { decoded = atob(raw.trim()); } catch(e) {}
 
         const configs = decoded.split('\n').map(c => c.trim()).filter(c => c.length > 5);
-        document.getElementById('configs-badge').innerText = configs.length;
+        document.getElementById('badge-configs').innerText = configs.length;
 
         const container = document.getElementById('configs-container');
         container.innerHTML = '';
         if (configs.length === 0) {
-          container.innerHTML = '<div class="text-center py-4 pg-text-muted font-mono">No nodes available</div>';
+          container.innerHTML = '<div class="text-center py-4 text-slate-500 font-mono">No nodes available</div>';
         } else {
           configs.forEach((cfg, idx) => {
             const name = cfg.includes('#') ? decodeURIComponent(cfg.split('#')[1]) : ('Config #' + (idx + 1));
             const card = document.createElement('div');
-            card.className = 'pg-cell p-2.5 rounded-xl flex items-center justify-between gap-2';
+            card.className = 'card-cell p-2.5 rounded-xl flex items-center justify-between gap-2';
             card.innerHTML = `
               <div class="truncate flex items-center gap-2">
                 <span class="w-1.5 h-1.5 rounded-full bg-cyan-400"></span>
-                <span class="font-medium pg-text-primary text-xs truncate">${name}</span>
+                <span class="font-medium text-slate-200 text-xs truncate">${name}</span>
               </div>
-              <button onclick="navigator.clipboard.writeText('${cfg}'); alert('${i18n[currentLang].config_copied}');" class="w-6 h-6 rounded-lg pg-cell hover:opacity-80 flex items-center justify-center pg-text-secondary flex-shrink-0 transition">
+              <button onclick="navigator.clipboard.writeText('${cfg}'); alert('Copied!');" class="w-6 h-6 rounded-lg card-cell hover:opacity-80 flex items-center justify-center text-slate-300 flex-shrink-0 transition">
                 <i class="fa-regular fa-copy text-[10px]"></i>
               </button>
             `;
@@ -486,11 +521,11 @@
         }
 
       } catch (err) {
-        console.error("Error loading sub:", err);
+        console.error("Fetch sub error:", err);
       }
     }
 
-    window.addEventListener('DOMContentLoaded', init);
+    window.addEventListener('DOMContentLoaded', start);
   </script>
 </body>
 </html>
