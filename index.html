@@ -173,14 +173,9 @@
     font-size:12px; font-weight:600;
     padding:3px 9px; border-radius:20px;
   }
-  .status-badge.online{
-    background:var(--green-bg); color:var(--green);
-  }
+  .status-badge.online{ background:var(--green-bg); color:var(--green); }
   .status-badge.online::before{ content:""; width:6px; height:6px; border-radius:50%; background:var(--green); }
-
-  .status-badge.offline{
-    background:var(--red-bg); color:var(--red);
-  }
+  .status-badge.offline{ background:var(--red-bg); color:var(--red); }
   .status-badge.offline::before{ content:""; width:6px; height:6px; border-radius:50%; background:var(--red); }
 
   /* Tabs */
@@ -227,7 +222,7 @@
   .sub-text .link{
     font-size:12px; color:var(--text-dim);
     white-space:nowrap; overflow:hidden; text-overflow:ellipsis;
-    max-width:360px; display:block;
+    max-width:320px; display:block;
   }
   .sub-actions{ display:flex; gap:8px; flex-shrink:0; }
 
@@ -240,11 +235,56 @@
   }
   .qr-img{
     width:88px; height:88px; border-radius:8px; background:#fff;
-    padding:6px; flex-shrink:0;
+    padding:6px; flex-shrink:0; cursor:pointer;
   }
   .qr-img img{ width:100%; height:100%; display:block; }
   .qr-text .title{ font-size:14px; font-weight:600; margin-bottom:4px; }
   .qr-text .desc{ font-size:12.5px; color:var(--text-dim); line-height:1.5; }
+
+  /* Modal Overlay */
+  .modal-overlay {
+    position: fixed; inset: 0; background: rgba(0,0,0,0.7);
+    display: flex; align-items: center; justify-content: center;
+    z-index: 1000; opacity: 0; pointer-events: none; transition: .25s;
+    backdrop-filter: blur(4px); padding: 16px;
+  }
+  .modal-overlay.show { opacity: 1; pointer-events: auto; }
+  .modal-card {
+    background: var(--card-bg); border: 1px solid var(--card-border);
+    width: 100%; max-width: 480px; border-radius: 24px; padding: 24px;
+    box-shadow: 0 25px 50px rgba(0,0,0,0.6); position: relative;
+    transform: scale(0.95); transition: .25s;
+  }
+  .modal-overlay.show .modal-card { transform: scale(1); }
+  .modal-close {
+    position: absolute; top: 20px; right: 20px; width: 32px; height: 32px;
+    border-radius: 50%; background: var(--box-bg); border: 1px solid var(--box-border);
+    display: flex; align-items: center; justify-content: center; cursor: pointer;
+    color: var(--text-dim); transition: .2s;
+  }
+  .modal-close:hover { color: var(--text-main); border-color: var(--accent); }
+  .modal-title { font-size: 18px; font-weight: 700; margin-bottom: 6px; }
+  .modal-desc { font-size: 13px; color: var(--text-dim); margin-bottom: 20px; }
+  .modal-qr-box {
+    background: #fff; padding: 16px; border-radius: 16px; width: fit-content;
+    margin: 0 auto 20px; box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+  }
+  .modal-link-box {
+    background: var(--box-bg); border: 1px solid var(--box-border);
+    border-radius: 12px; padding: 12px; font-size: 12px; font-family: monospace;
+    color: var(--text-dim); word-break: break-all; margin-bottom: 20px;
+    max-height: 80px; overflow-y: auto;
+  }
+  .modal-btns { display: flex; gap: 10px; }
+  .modal-btn {
+    flex: 1; padding: 12px; border-radius: 12px; font-size: 13px; font-weight: 600;
+    display: flex; align-items: center; justify-content: center; gap: 8px; cursor: pointer;
+    border: none; transition: .2s; text-decoration: none;
+  }
+  .btn-primary { background: linear-gradient(135deg, #7c5cff, #4f8cff); color: #fff; }
+  .btn-primary:hover { opacity: 0.9; }
+  .btn-secondary { background: var(--box-bg); border: 1px solid var(--box-border); color: var(--text-main); }
+  .btn-secondary:hover { border-color: var(--accent); }
 
   /* Configs */
   .cfg-item{
@@ -265,7 +305,7 @@
     position:fixed; bottom:24px; left:50%; transform:translateX(-50%) translateY(20px);
     background:#1b1b26; color:#fff; padding:10px 18px; border-radius:10px;
     font-size:13px; opacity:0; transition:.25s; pointer-events:none;
-    border:1px solid rgba(255,255,255,.1);
+    border:1px solid rgba(255,255,255,.1); z-index: 2000;
   }
   .toast.show{ opacity:1; transform:translateX(-50%) translateY(0); }
 
@@ -381,12 +421,15 @@
         <div class="icon-btn" id="copyBtn" title="Copy link">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
         </div>
+        <div class="icon-btn" id="qrOpenBtn" title="QR code">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
+        </div>
       </div>
     </div>
 
     <div class="qr-block">
-      <div class="qr-img">
-        <img id="qrImage" src="" alt="QR code">
+      <div class="qr-img" id="qrPreviewBtn" title="Click to expand QR">
+        <div id="qrThumb"></div>
       </div>
       <div class="qr-text">
         <div class="title" data-i18n="qr_title">Scan with your phone</div>
@@ -408,8 +451,34 @@
   </div>
 </div>
 
+<!-- QR Modal Popup -->
+<div class="modal-overlay" id="qrModal">
+  <div class="modal-card">
+    <div class="modal-close" id="modalClose">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:16px;height:16px;"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+    </div>
+    <div class="modal-title" data-i18n="modal_title">Scan. Import. Connect.</div>
+    <div class="modal-desc" data-i18n="modal_desc">Scan with your client app. Keep this code private.</div>
+    <div class="modal-qr-box">
+      <div id="modalQrCode"></div>
+    </div>
+    <div class="modal-link-box" id="modalLinkText">--</div>
+    <div class="modal-btns">
+      <button class="modal-btn btn-primary" id="modalCopyBtn">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:16px;height:16px;"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+        <span data-i18n="btn_copy">Copy</span>
+      </button>
+      <a class="modal-btn btn-secondary" id="modalSaveBtn" download="subscription-qr.png">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:16px;height:16px;"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+        <span data-i18n="btn_save">Save QR</span>
+      </a>
+    </div>
+  </div>
+</div>
+
 <div class="toast" id="toast">Link copied!</div>
 
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
 <script>
   const REAL_SUB_URL = "https://late-truth-84b6.phoenix1198811.workers.dev/sub/djMsMSwxNzg5OTQ1NTEy.d1JmvrNN3xP-emhSxOLdoOJuU8YZnBCPZp5pTJm3EnI";
 
@@ -432,6 +501,10 @@
       tab_configs: "Configs",
       qr_title: "Scan with your phone",
       qr_desc: "Scan this code in your VPN app to add the subscription without copying the link.",
+      modal_title: "Scan. Import. Connect.",
+      modal_desc: "Scan with your client app. Keep this code private.",
+      btn_copy: "Copy",
+      btn_save: "Save QR",
       auto_updates: "Auto-updates every 12 hours",
       loading_nodes: "Loading configurations...",
       no_configs: "No configs found",
@@ -456,6 +529,10 @@
       tab_configs: "کانفیگ‌ها",
       qr_title: "اسکن با گوشی",
       qr_desc: "این بارکد را در برنامه VPN گوشی خود اسکن کنید تا اشتراک افزوده شود.",
+      modal_title: "اسکن، ایمپورت و اتصال",
+      modal_desc: "با برنامه کلاینت خود اسکن کنید. این کد را محرمانه نگه دارید.",
+      btn_copy: "کپی",
+      btn_save: "ذخیره QR",
       auto_updates: "بروزرسانی خودکار هر ۱۲ ساعت",
       loading_nodes: "در حال دریافت کانفیگ‌ها...",
       no_configs: "هیچ کانفیگی یافت نشد",
@@ -536,6 +613,24 @@
     navigator.clipboard.writeText(REAL_SUB_URL).then(() => showToast(i18n[currentLang].copied));
   });
 
+  // Modal QR Logic
+  const qrModal = document.getElementById('qrModal');
+  const qrOpenBtn = document.getElementById('qrOpenBtn');
+  const qrPreviewBtn = document.getElementById('qrPreviewBtn');
+  const modalClose = document.getElementById('modalClose');
+
+  function openQrModal() { qrModal.classList.add('show'); }
+  function closeQrModal() { qrModal.classList.remove('show'); }
+
+  qrOpenBtn.addEventListener('click', openQrModal);
+  qrPreviewBtn.addEventListener('click', openQrModal);
+  modalClose.addEventListener('click', closeQrModal);
+  qrModal.addEventListener('click', (e) => { if (e.target === qrModal) closeQrModal(); });
+
+  document.getElementById('modalCopyBtn').addEventListener('click', () => {
+    navigator.clipboard.writeText(REAL_SUB_URL).then(() => showToast(i18n[currentLang].copied));
+  });
+
   // Circular gauge updater
   function setGauge(pct) {
     const circumference = 2 * Math.PI * 52;
@@ -550,8 +645,24 @@
     setLanguage(currentLang);
 
     document.getElementById('subLink').textContent = REAL_SUB_URL;
-    document.getElementById('qrImage').src =
-      'https://api.qrserver.com/v1/create-qr-code/?size=200x200&margin=0&data=' + encodeURIComponent(REAL_SUB_URL);
+    document.getElementById('modalLinkText').textContent = REAL_SUB_URL;
+
+    // Generate Thumb QR & Modal QR
+    const qrThumb = document.getElementById("qrThumb");
+    qrThumb.innerHTML = "";
+    new QRCode(qrThumb, { text: REAL_SUB_URL, width: 76, height: 76, colorDark: "#000", colorLight: "#fff", correctLevel: QRCode.CorrectLevel.M });
+
+    const modalQrCode = document.getElementById("modalQrCode");
+    modalQrCode.innerHTML = "";
+    new QRCode(modalQrCode, { text: REAL_SUB_URL, width: 210, height: 210, colorDark: "#000", colorLight: "#fff", correctLevel: QRCode.CorrectLevel.M });
+
+    // Setup Save QR Button
+    setTimeout(() => {
+      const qrCanvas = modalQrCode.querySelector('canvas');
+      if (qrCanvas) {
+        document.getElementById('modalSaveBtn').href = qrCanvas.toDataURL("image/png");
+      }
+    }, 500);
 
     const statusBadge = document.getElementById('valStatus');
 
@@ -572,7 +683,6 @@
         if (k && v) stats[k] = parseInt(v, 10);
       });
 
-      // بررسی تمامی نام‌های احتمالی کلید آپلود در هدرها
       const up = stats.upload || stats.ul || stats.up || 0;
       const down = stats.download || stats.dl || stats.down || 0;
       const total = stats.total || stats.t || (10 * 1024 * 1024 * 1024);
@@ -586,13 +696,7 @@
       document.getElementById('totalVal').textContent = toGB(total);
       document.getElementById('valTotal').textContent = toGB(total) + ' GB';
       document.getElementById('valDown').textContent = toGB(down) + ' GB';
-
-      // نمایش داینامیک آپلود (اگر بیشتر از ۱ مگابایت بود بر حسب MB وگرنه KB یا همان MB)
-      if (up >= (1024 * 1024)) {
-        document.getElementById('valUp').textContent = toMB(up) + ' MB';
-      } else {
-        document.getElementById('valUp').textContent = (up / (1024 ** 2)).toFixed(2) + ' MB';
-      }
+      document.getElementById('valUp').textContent = toMB(up) + ' MB';
 
       const pct = total > 0 ? Math.min(100, (used / total) * 100) : 0;
       setGauge(pct);
