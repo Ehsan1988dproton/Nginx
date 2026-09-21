@@ -235,18 +235,7 @@
   .qr-text .title{ font-size:14px; font-weight:600; margin-bottom:4px; }
   .qr-text .desc{ font-size:12.5px; color:var(--text-dim); line-height:1.5; }
 
-  /* Apps & Configs */
-  .app-grid{ display:grid; grid-template-columns:repeat(2,1fr); gap:10px; margin-bottom:16px; }
-  .app-link{
-    display:flex; align-items:center; gap:12px;
-    background:var(--box-bg); border:1px solid var(--box-border);
-    border-radius:12px; padding:12px; text-decoration:none; color:var(--text-main);
-    transition:.2s;
-  }
-  .app-link:hover{ border-color:var(--accent); }
-  .app-link-title{ font-size:13px; font-weight:600; }
-  .app-link-sub{ font-size:11px; color:var(--text-dim); }
-
+  /* Configs */
   .cfg-item{
     display:flex; align-items:center; justify-content:space-between;
     background:var(--box-bg); border:1px solid var(--box-border);
@@ -273,7 +262,6 @@
     .info-grid{ grid-template-columns:repeat(2,1fr); }
     .usage-section{ flex-direction:column; align-items:flex-start; }
     .sub-text .link{ max-width:180px; }
-    .app-grid{ grid-template-columns:1fr; }
   }
 </style>
 </head>
@@ -348,7 +336,7 @@
     <div class="info-box"><div class="label" data-i18n="expiry">Expiry</div><div class="value" id="valExpiry">--</div></div>
     <div class="info-box"><div class="label" data-i18n="status">Status</div><div class="value"><span class="status-badge" id="valStatus" data-i18n="active">Active</span></div></div>
 
-    <div class="info-box"><div class="label" data-i18n="downloaded">Downloaded</div><div class="value" id="valDown">-- MB</div></div>
+    <div class="info-box"><div class="label" data-i18n="downloaded">Downloaded</div><div class="value" id="valDown">-- GB</div></div>
     <div class="info-box"><div class="label" data-i18n="uploaded">Uploaded</div><div class="value" id="valUp">-- MB</div></div>
     <div class="info-box"><div class="label" data-i18n="total_quota">Total quota</div><div class="value" id="valTotal">-- GB</div></div>
 
@@ -360,10 +348,6 @@
     <button class="tab active" data-tab="sub">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>
       <span data-i18n="tab_sub">Subscription</span>
-    </button>
-    <button class="tab" data-tab="apps">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/></svg>
-      <span data-i18n="tab_apps">Apps</span>
     </button>
     <button class="tab" data-tab="configs">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3" y2="6"/><line x1="3" y1="12" x2="3" y2="12"/><line x1="3" y1="18" x2="3" y2="18"/></svg>
@@ -386,9 +370,6 @@
         <div class="icon-btn" id="copyBtn" title="Copy link">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
         </div>
-        <div class="icon-btn" id="qrBtn" title="QR code">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
-        </div>
       </div>
     </div>
 
@@ -400,36 +381,6 @@
         <div class="title" data-i18n="qr_title">Scan with your phone</div>
         <div class="desc" data-i18n="qr_desc">Scan this code in your VPN app to add the subscription without copying the link.</div>
       </div>
-    </div>
-  </div>
-
-  <!-- Apps Tab Pane -->
-  <div class="tab-pane" id="pane-apps">
-    <div class="app-grid">
-      <a class="app-link" id="app-v2rayng" href="#">
-        <div>
-          <div class="app-link-title">v2rayNG</div>
-          <div class="app-link-sub">Android Client</div>
-        </div>
-      </a>
-      <a class="app-link" id="app-singbox" href="#">
-        <div>
-          <div class="app-link-title">Sing-box</div>
-          <div class="app-link-sub">Universal Core</div>
-        </div>
-      </a>
-      <a class="app-link" id="app-streisand" href="#">
-        <div>
-          <div class="app-link-title">Streisand</div>
-          <div class="app-link-sub">iOS Client</div>
-        </div>
-      </a>
-      <a class="app-link" id="app-shadowrocket" href="#">
-        <div>
-          <div class="app-link-title">Shadowrocket</div>
-          <div class="app-link-sub">iOS Client</div>
-        </div>
-      </a>
     </div>
   </div>
 
@@ -466,7 +417,6 @@
       total_quota: "Total quota",
       last_online: "Last Online",
       tab_sub: "Subscription",
-      tab_apps: "Apps",
       tab_configs: "Configs",
       qr_title: "Scan with your phone",
       qr_desc: "Scan this code in your VPN app to add the subscription without copying the link.",
@@ -490,7 +440,6 @@
       total_quota: "کل حجم",
       last_online: "آخرین اتصال",
       tab_sub: "لینک اشتراک",
-      tab_apps: "برنامه‌ها",
       tab_configs: "کانفیگ‌ها",
       qr_title: "اسکن با گوشی",
       qr_desc: "این بارکد را در برنامه VPN گوشی خود اسکن کنید تا اشتراک افزوده شود.",
@@ -562,7 +511,7 @@
     });
   });
 
-  // Copy buttons
+  // Copy button
   document.getElementById('copyBtn').addEventListener('click', () => {
     navigator.clipboard.writeText(REAL_SUB_URL).then(() => showToast(i18n[currentLang].copied));
   });
@@ -584,12 +533,6 @@
     document.getElementById('subLink').textContent = REAL_SUB_URL;
     document.getElementById('qrImage').src =
       'https://api.qrserver.com/v1/create-qr-code/?size=200x200&margin=0&data=' + encodeURIComponent(REAL_SUB_URL);
-
-    // App links
-    document.getElementById('app-v2rayng').href = "v2rayng://install-config?url=" + encodeURIComponent(REAL_SUB_URL);
-    document.getElementById('app-singbox').href = "sing-box://import-remote-profile?url=" + encodeURIComponent(REAL_SUB_URL);
-    document.getElementById('app-streisand').href = "streisand://import/" + REAL_SUB_URL;
-    document.getElementById('app-shadowrocket').href = "sub://" + btoa(REAL_SUB_URL);
 
     // Live Last Online
     const now = new Date();
@@ -620,7 +563,7 @@
         document.getElementById('remainVal').textContent = toGB(rem);
         document.getElementById('totalVal').textContent = toGB(total);
         document.getElementById('valTotal').textContent = toGB(total) + ' GB';
-        document.getElementById('valDown').textContent = toMB(down) + ' MB';
+        document.getElementById('valDown').textContent = toGB(down) + ' GB';
         document.getElementById('valUp').textContent = toMB(up) + ' MB';
 
         const pct = total > 0 ? Math.min(100, (used / total) * 100) : 0;
