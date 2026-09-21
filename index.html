@@ -1,78 +1,104 @@
+// آدرس ورکر سابسکریپشن شما
+const WORKER_SUB_URL = "https://late-truth-84b6.phoenix1198811.workers.dev/sub/djMsMSwxNzg5OTQ1NTEy.d1JmvrNN3xP-emhSxOLdoOJuU8YZnBCPZp5pTJm3EnI";
+
 async function syncWorkerSubscription() {
   try {
-    // ۱. تنظیم کادر کپی و کیوآرکد روی لینک سابسکریپشن
+    // ۱. تنظیم مقدار فیلد سابسکریپشن و تولید QR Code
     const subInput = document.getElementById('sub-url-input');
     if (subInput) subInput.value = WORKER_SUB_URL;
+
     if (typeof generateQrCode === 'function') {
       generateQrCode(WORKER_SUB_URL);
     }
 
-    // ۲. ارسال درخواست به ورکر
+    // ۲. ارسال درخواست به ورکر برای دریافت داده‌ها
     const response = await fetch(WORKER_SUB_URL);
-    
-    // ۳. خواندن هدر اطلاعات ترافیک (Subscription-Userinfo)
+    if (!response.ok) {
+      throw new Error(`خطای دریافت از ورکر: وضعیت ${response.status}`);
+    }
+
+    // ۳. پردازش هدر اطلاعات ترافیک کاربر (Subscription-Userinfo)
     const userInfo = response.headers.get('subscription-userinfo');
     if (userInfo) {
       const stats = {};
-      userInfo.split(';').forEach(p => {
-        const [k, v] = p.trim().split('=');
+      userInfo.split(';').forEach(pair => {
+        const [k, v] = pair.trim().split('=');
         if (k && v) stats[k] = parseInt(v, 10);
       });
 
       const upload = stats.upload || 0;
       const download = stats.download || 0;
-      const total = stats.total || (10 * 1024 * 1024 * 1024); // ۱۰ گیگابایت پیش‌فرض در صورت نبود هدر
+      const total = stats.total || (10 * 1024 * 1024 * 1024); // ۱۰ گیگابایت به عنوان پیش‌فرض در صورت نبود هدر
       const used = upload + download;
       const remaining = Math.max(0, total - used);
 
       const toGB = b => (b / (1024 ** 3)).toFixed(2);
       const toMB = b => (b / (1024 ** 2)).toFixed(2);
 
-      const elRemaining = document.querySelector('#stat-remaining');
+      // آپدیت متن‌های حجم و درصد روی کارت‌ها
+      const elRemaining = document.getElementById('stat-remaining');
       if (elRemaining) elRemaining.innerText = toGB(remaining) + ' GB';
-      
-      const elTotal = document.querySelector('#stat-total');
+
+      const elTotal = document.getElementById('stat-total');
       if (elTotal) elTotal.innerText = 'of ' + toGB(total) + ' GB';
 
-      const elDown = document.querySelector('#stat-download');
+      const elTotalQuota = document.getElementById('stat-total-quota');
+      if (elTotalQuota) elTotalQuota.innerText = toGB(total) + ' GB';
+
+      const elDown = document.getElementById('stat-download');
       if (elDown) elDown.innerText = toMB(download) + ' MB';
 
-      const elUp = document.querySelector('#stat-upload');
+      const elUp = document.getElementById('stat-upload');
       if (elUp) elUp.innerText = toMB(upload) + ' MB';
 
+      // محاسبه درصد و به‌روزرسانی گیج دایره‌ای
       const percentage = total > 0 ? Math.min(100, (used / total) * 100).toFixed(1) : 0;
-      const elPercent = document.querySelector('#stat-percentage');
+      const elPercent = document.getElementById('stat-percentage');
       if (elPercent) elPercent.innerText = percentage + '%';
 
+      const gauge = document.getElementById('usage-gauge');
+      if (gauge) {
+        const circumference = 2 * Math.PI * 40; // شعاع دایره r=40
+        const offset = circumference - (percentage / 100) * circumference;
+        gauge.style.strokeDasharray = `${circumference} ${circumference}`;
+        gauge.style.strokeDashoffset = offset;
+      }
+
+      // محاسبه زمان انقضا
       if (stats.expire) {
         const expDate = new Date(stats.expire * 1000);
-        const elExp = document.querySelector('#stat-expiry');
+        const elExp = document.getElementById('stat-expiry');
         if (elExp) elExp.innerText = expDate.toISOString().split('T')[0];
+
         const days = Math.max(0, Math.ceil((expDate - new Date()) / (1000 * 60 * 60 * 24)));
-        const elDays = document.querySelector('#stat-days-left');
+        const elDays = document.getElementById('stat-days-left');
         if (elDays) elDays.innerText = days;
       }
     }
 
-    // ۴. دیکود کردن کانفیگ‌های داخل ساب (Base64)
+    // ۴. استخراج و دیکود کردن کانفیگ‌ها (Base64 به متن)
     const rawBody = await response.text();
     let decoded = rawBody;
     try {
       decoded = atob(rawBody.trim());
     } catch (e) {
-      // در صورتی که پاسخ پلین‌تکست باشد
+      // اگر از قبل Base64 نبود یا متنی بود
     }
 
-    const configs = decoded.split('\n').filter(c => c.trim().startsWith('vless://') || c.trim().startsWith('vmess://') || c.trim().startsWith('trojan://'));
-    
-    // ۵. درج کانفیگ‌ها در تب Configs
+    const configs = decoded
+      .split('\n')
+      .map(c => c.trim())
+      .filter(c => c.startsWith('vless://') || c.startsWith('vmess://') || c.startsWith('trojan://') || c.startsWith('ss://'));
+
+    // ۵. رندر کانفیگ‌ها در تب کانفیگ‌ها
     if (typeof renderConfigsList === 'function') {
       renderConfigsList(configs);
     }
+
   } catch (err) {
-    console.error("خطا در همگام‌سازی با ورکر:", err);
+    console.error("خطا در همگام‌سازی اطلاعات با ورکر:", err);
   }
 }
 
-// فراخوانی هنگام لود کامل صفحه
+// اجرای خودکار پس از بارگذاری کامل صفحه
 window.addEventListener('DOMContentLoaded', syncWorkerSubscription);
