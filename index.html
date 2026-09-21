@@ -20,6 +20,8 @@
     --accent-2: #4f8cff;
     --green: #22c55e;
     --green-bg: rgba(34,197,94,.12);
+    --red: #ef4444;
+    --red-bg: rgba(239,68,68,.12);
     --divider: rgba(255,255,255,.08);
   }
   body.light{
@@ -164,13 +166,22 @@
   }
   .info-box .label{ font-size:12px; color:var(--text-dim); margin-bottom:4px; }
   .info-box .value{ font-size:14px; font-weight:600; }
+
+  /* Status Badges */
   .status-badge{
     display:inline-flex; align-items:center; gap:5px;
-    background:var(--green-bg); color:var(--green);
     font-size:12px; font-weight:600;
     padding:3px 9px; border-radius:20px;
   }
-  .status-badge::before{ content:""; width:6px; height:6px; border-radius:50%; background:var(--green); }
+  .status-badge.online{
+    background:var(--green-bg); color:var(--green);
+  }
+  .status-badge.online::before{ content:""; width:6px; height:6px; border-radius:50%; background:var(--green); }
+
+  .status-badge.offline{
+    background:var(--red-bg); color:var(--red);
+  }
+  .status-badge.offline::before{ content:""; width:6px; height:6px; border-radius:50%; background:var(--red); }
 
   /* Tabs */
   .tabs{
@@ -334,7 +345,7 @@
   <div class="info-grid">
     <div class="info-box"><div class="label" data-i18n="days_left">Days left</div><div class="value" id="valDays">--</div></div>
     <div class="info-box"><div class="label" data-i18n="expiry">Expiry</div><div class="value" id="valExpiry">--</div></div>
-    <div class="info-box"><div class="label" data-i18n="status">Status</div><div class="value"><span class="status-badge" id="valStatus" data-i18n="active">Active</span></div></div>
+    <div class="info-box"><div class="label" data-i18n="status">Status</div><div class="value"><span class="status-badge offline" id="valStatus" data-i18n="offline">Offline</span></div></div>
 
     <div class="info-box"><div class="label" data-i18n="downloaded">Downloaded</div><div class="value" id="valDown">-- GB</div></div>
     <div class="info-box"><div class="label" data-i18n="uploaded">Uploaded</div><div class="value" id="valUp">-- MB</div></div>
@@ -411,7 +422,8 @@
       days_left: "Days left",
       expiry: "Expiry",
       status: "Status",
-      active: "Active",
+      online: "Online",
+      offline: "Offline",
       downloaded: "Downloaded",
       uploaded: "Uploaded",
       total_quota: "Total quota",
@@ -434,7 +446,8 @@
       days_left: "روزهای باقیمانده",
       expiry: "تاریخ انقضا",
       status: "وضعیت",
-      active: "فعال",
+      online: "آنلاین",
+      offline: "آفلاین",
       downloaded: "دانلود شده",
       uploaded: "آپلود شده",
       total_quota: "کل حجم",
@@ -465,6 +478,14 @@
         el.textContent = i18n[lang][key];
       }
     });
+
+    // بروزرسانی ترجمه وضعیت بر اساس کلاس آنلاین یا آفلاین بودن
+    const statusBadge = document.getElementById('valStatus');
+    if (statusBadge.classList.contains('online')) {
+      statusBadge.textContent = i18n[lang].online;
+    } else {
+      statusBadge.textContent = i18n[lang].offline;
+    }
 
     document.querySelector('.chk-en').style.display = (lang === 'en') ? 'inline' : 'none';
     document.querySelector('.chk-fa').style.display = (lang === 'fa') ? 'inline' : 'none';
@@ -534,17 +555,18 @@
     document.getElementById('qrImage').src =
       'https://api.qrserver.com/v1/create-qr-code/?size=200x200&margin=0&data=' + encodeURIComponent(REAL_SUB_URL);
 
-    // Live Last Online
-    const now = new Date();
-    const pad = n => String(n).padStart(2, '0');
-    document.getElementById('valOnline').textContent = 
-      `${pad(now.getMonth() + 1)}/${pad(now.getDate())}/${now.getFullYear()}, ${pad(now.getHours())}:${pad(now.getMinutes())}:${pad(now.getSeconds())}`;
+    const statusBadge = document.getElementById('valStatus');
 
     try {
       const res = await fetch('/get-sub-data');
       const userInfo = res.headers.get('subscription-userinfo');
 
       if (userInfo) {
+        // تغییر وضعیت به Online (سبز) چون دیتا با موفقیت دریافت شد
+        statusBadge.className = "status-badge online";
+        statusBadge.setAttribute('data-i18n', 'online');
+        statusBadge.textContent = i18n[currentLang].online;
+
         const stats = {};
         userInfo.split(';').forEach(item => {
           const [k, v] = item.trim().split('=');
@@ -571,11 +593,20 @@
 
         if (stats.expire) {
           const exp = new Date(stats.expire * 1000);
+          const pad = n => String(n).padStart(2, '0');
           document.getElementById('valExpiry').textContent = 
             `${pad(exp.getMonth() + 1)}/${pad(exp.getDate())}/${exp.getFullYear()}, 00:00:00`;
           const days = Math.max(0, Math.ceil((exp - new Date()) / (1000 * 60 * 60 * 24)));
           document.getElementById('valDays').textContent = days;
         }
+
+        // Live Last Online بر اساس زمان دریافت موفق دیتای جدید
+        const now = new Date();
+        const pad = n => String(n).padStart(2, '0');
+        document.getElementById('valOnline').textContent = 
+          `${pad(now.getMonth() + 1)}/${pad(now.getDate())}/${now.getFullYear()}, ${pad(now.getHours())}:${pad(now.getMinutes())}:${pad(now.getSeconds())}`;
+      } else {
+        throw new Error("No userinfo header");
       }
 
       // Fetch configs
@@ -611,6 +642,11 @@
 
     } catch (err) {
       console.error('Data fetch error:', err);
+      // اگر ارتباط برقرار نشد، وضعیت روی Offline (قرمز) قرار می‌گیرد
+      statusBadge.className = "status-badge offline";
+      statusBadge.setAttribute('data-i18n', 'offline');
+      statusBadge.textContent = i18n[currentLang].offline;
+      document.getElementById('valOnline').textContent = "Offline";
     }
   }
 
