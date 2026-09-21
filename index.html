@@ -263,7 +263,7 @@
     color: var(--text-dim); transition: .2s;
   }
   .modal-close:hover { color: var(--text-main); border-color: var(--accent); }
-  .modal-title { font-size: 18px; font-weight: 700; margin-bottom: 6px; }
+  .modal-title { font-size: 18px; font-weight: 700; margin-bottom: 6px; color: var(--green); }
   .modal-desc { font-size: 13px; color: var(--text-dim); margin-bottom: 20px; }
   .modal-qr-box {
     background: #fff; padding: 16px; border-radius: 16px; width: fit-content;
@@ -563,9 +563,6 @@
       statusBadge.textContent = i18n[lang].offline;
     }
 
-    document.querySelector('.chk-en').style.display = (lang === 'en') ? 'inline' : 'none';
-    document.querySelector('.chk-fa').style.display = (lang === 'fa') ? 'inline' : 'none';
-
     document.getElementById('langMenu').classList.remove('show');
   }
 
@@ -656,7 +653,6 @@
     modalQrCode.innerHTML = "";
     new QRCode(modalQrCode, { text: REAL_SUB_URL, width: 210, height: 210, colorDark: "#000", colorLight: "#fff", correctLevel: QRCode.CorrectLevel.M });
 
-    // Setup Save QR Button
     setTimeout(() => {
       const qrCanvas = modalQrCode.querySelector('canvas');
       if (qrCanvas) {
