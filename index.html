@@ -1,531 +1,685 @@
 <!DOCTYPE html>
-<html lang="en" class="dark">
+<html lang="en" dir="ltr">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Subscription info</title>
-  <script src="https://cdn.tailwindcss.com"></script>
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
-  <script>
-    tailwind.config = {
-      darkMode: 'class',
-    }
-  </script>
-  <style>
-    @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Vazirmatn:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap');
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Subscription Info Panel</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Vazirmatn:wght@400;500;600;700&display=swap');
 
-    html[dir="rtl"] * {
-      font-family: 'Vazirmatn', -apple-system, sans-serif !important;
-    }
-    html[dir="ltr"] * {
-      font-family: 'Plus Jakarta Sans', -apple-system, sans-serif;
-    }
-    .font-mono {
-      font-family: 'JetBrains Mono', monospace !important;
-    }
+  :root{
+    --bg-glow-1: rgba(124,58,237,.35);
+    --bg-glow-2: rgba(37,99,235,.25);
+    --card-bg: #14141c;
+    --card-border: rgba(255,255,255,.08);
+    --box-bg: #1b1b26;
+    --box-border: rgba(255,255,255,.06);
+    --text-main: #f4f4f7;
+    --text-dim: #8b8b9b;
+    --accent: #7c5cff;
+    --accent-2: #4f8cff;
+    --green: #22c55e;
+    --green-bg: rgba(34,197,94,.12);
+    --divider: rgba(255,255,255,.08);
+  }
+  body.light{
+    --card-bg: #ffffff;
+    --card-border: rgba(0,0,0,.08);
+    --box-bg: #f5f5fa;
+    --box-border: rgba(0,0,0,.06);
+    --text-main: #16161d;
+    --text-dim: #6b6b78;
+    --divider: rgba(0,0,0,.08);
+  }
+  *{box-sizing:border-box;}
+  
+  html[dir="rtl"] * {
+    font-family: 'Vazirmatn', -apple-system, sans-serif !important;
+  }
+  html[dir="ltr"] * {
+    font-family: 'Plus Jakarta Sans', -apple-system, sans-serif;
+  }
 
-    /* Dark Mode with exact purple ambient glow as in image 2 */
-    .dark body {
-      background-color: #0c0d14;
-      background-image: 
-        radial-gradient(at 0% 0%, rgba(99, 102, 241, 0.12) 0px, transparent 50%),
-        radial-gradient(at 100% 100%, rgba(139, 92, 246, 0.08) 0px, transparent 50%);
-      color: #94a3b8;
-    }
-    .dark .main-wrapper {
-      background-color: rgba(18, 20, 31, 0.95);
-      border: 1px solid rgba(255, 255, 255, 0.07);
-      box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.6);
-    }
-    .dark .card-cell {
-      background-color: #171a29;
-      border: 1px solid rgba(255, 255, 255, 0.05);
-    }
-    .dark .card-cell:hover {
-      border-color: rgba(255, 255, 255, 0.1);
-    }
-    .dark .track-circle { stroke: #23273c; }
+  body{
+    margin:0;
+    min-height:100vh;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    padding:40px 16px;
+    background:
+      radial-gradient(circle at 15% 15%, var(--bg-glow-1), transparent 45%),
+      radial-gradient(circle at 85% 30%, var(--bg-glow-2), transparent 50%),
+      radial-gradient(circle at 50% 90%, rgba(124,58,237,.15), transparent 40%),
+      #0a0a10;
+    transition:background .3s;
+  }
+  body.light{
+    background:
+      radial-gradient(circle at 15% 15%, rgba(124,58,237,.12), transparent 45%),
+      radial-gradient(circle at 85% 30%, rgba(79,140,255,.12), transparent 50%),
+      #eef0f6;
+  }
 
-    /* Light Mode */
-    body {
-      background-color: #f3f4f8;
-      color: #475569;
-      transition: all 0.3s ease;
-    }
-    .main-wrapper {
-      background-color: #ffffff;
-      border: 1px solid #e2e8f0;
-      box-shadow: 0 20px 30px -10px rgba(0, 0, 0, 0.08);
-      transition: all 0.3s ease;
-    }
-    .card-cell {
-      background-color: #f8fafc;
-      border: 1px solid #e2e8f0;
-      transition: all 0.3s ease;
-    }
-    .track-circle { stroke: #e2e8f0; }
+  .card{
+    width:100%;
+    max-width:760px;
+    background:var(--card-bg);
+    border:1px solid var(--card-border);
+    border-radius:20px;
+    padding:24px;
+    box-shadow:0 20px 60px rgba(0,0,0,.45);
+    color:var(--text-main);
+    transition:background .3s, color .3s, border-color .3s;
+  }
 
-    .gauge-circle {
-      transform: rotate(-90deg);
-      transform-origin: 50% 50%;
-    }
-    .gauge-progress {
-      transition: stroke-dashoffset 0.8s cubic-bezier(0.4, 0, 0.2, 1);
-    }
-  </style>
+  /* Header */
+  .header{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    padding-bottom:20px;
+    border-bottom:1px solid var(--divider);
+    margin-bottom:20px;
+  }
+  .header-left{display:flex; align-items:center; gap:12px;}
+  .app-icon{
+    width:44px; height:44px; border-radius:12px;
+    background:linear-gradient(135deg,#5b8dff,#7c5cff);
+    display:flex; align-items:center; justify-content:center;
+    flex-shrink:0;
+  }
+  .app-icon svg{width:22px; height:22px; stroke:#fff;}
+  .header-title{font-size:16px; font-weight:600; margin:0;}
+  .header-actions{display:flex; gap:8px; position:relative;}
+  
+  .icon-btn{
+    width:36px; height:36px; border-radius:50%;
+    background:var(--box-bg); border:1px solid var(--box-border);
+    display:flex; align-items:center; justify-content:center;
+    cursor:pointer; color:var(--text-dim);
+    transition:.2s;
+  }
+  .icon-btn:hover{ color:var(--text-main); border-color:var(--accent); }
+  .icon-btn svg{width:16px; height:16px;}
+
+  /* Language Dropdown */
+  .lang-menu{
+    display:none; position:absolute; top:44px; right:0; z-index:100;
+    background:var(--card-bg); border:1px solid var(--card-border);
+    border-radius:12px; padding:6px; min-width:120px;
+    box-shadow:0 10px 25px rgba(0,0,0,.4);
+  }
+  html[dir="rtl"] .lang-menu{ right:auto; left:0; }
+  .lang-menu.show{ display:block; }
+  .lang-item{
+    width:100%; display:flex; align-items:center; justify-content:space-between;
+    padding:8px 12px; font-size:13px; color:var(--text-main);
+    background:none; border:none; border-radius:8px; cursor:pointer;
+    transition:.2s;
+  }
+  .lang-item:hover{ background:var(--box-bg); color:var(--accent-2); }
+  .lang-item.active{ color:var(--accent-2); font-weight:600; }
+
+  /* Usage section */
+  .usage-section{
+    display:flex;
+    gap:28px;
+    align-items:center;
+    padding-bottom:20px;
+    border-bottom:1px solid var(--divider);
+    margin-bottom:20px;
+    flex-wrap:wrap;
+  }
+  .ring-wrap{ position:relative; width:118px; height:118px; flex-shrink:0; }
+  .ring-wrap svg{ width:100%; height:100%; transform:rotate(-90deg); }
+  .ring-bg{ fill:none; stroke:var(--box-bg); stroke-width:10; }
+  .ring-fg{ fill:none; stroke:url(#ringGrad); stroke-width:10; stroke-linecap:round; transition:stroke-dashoffset 1s ease; }
+  .ring-center{
+    position:absolute; top:0; left:0; width:100%; height:100%;
+    display:flex; flex-direction:column; align-items:center; justify-content:center;
+  }
+  .ring-percent{ font-size:22px; font-weight:700; }
+  .ring-label{ font-size:11px; color:var(--text-dim); margin-top:2px; }
+
+  .usage-info{ flex:1; min-width:200px; }
+  .usage-label{ font-size:13px; color:var(--text-dim); margin-bottom:4px; }
+  .usage-value{ display:flex; align-items:baseline; gap:6px; }
+  .usage-value .num{ font-size:34px; font-weight:700; color:var(--accent-2); }
+  .usage-value .unit{ font-size:15px; color:var(--text-dim); }
+  .usage-of{ font-size:13px; color:var(--text-dim); margin-top:4px; }
+
+  /* Info grid */
+  .info-grid{
+    display:grid;
+    grid-template-columns:repeat(3, 1fr);
+    gap:12px;
+    margin-bottom:20px;
+  }
+  .info-box{
+    background:var(--box-bg);
+    border:1px solid var(--box-border);
+    border-radius:12px;
+    padding:10px 14px;
+  }
+  .info-box .label{ font-size:12px; color:var(--text-dim); margin-bottom:4px; }
+  .info-box .value{ font-size:14px; font-weight:600; }
+  .status-badge{
+    display:inline-flex; align-items:center; gap:5px;
+    background:var(--green-bg); color:var(--green);
+    font-size:12px; font-weight:600;
+    padding:3px 9px; border-radius:20px;
+  }
+  .status-badge::before{ content:""; width:6px; height:6px; border-radius:50%; background:var(--green); }
+
+  /* Tabs */
+  .tabs{
+    display:flex; gap:24px;
+    border-bottom:1px solid var(--divider);
+    margin-bottom:18px;
+  }
+  .tab{
+    display:flex; align-items:center; gap:6px;
+    padding:10px 2px 14px;
+    font-size:14px; color:var(--text-dim);
+    border-bottom:2px solid transparent;
+    cursor:pointer; font-weight:500;
+    background:none; border-left:none; border-right:none; border-top:none;
+  }
+  .tab svg{ width:15px; height:15px; }
+  .tab.active{ color:var(--accent-2); border-bottom-color:var(--accent-2); }
+  .tab .badge{
+    background:var(--accent); color:#fff;
+    font-size:10px; min-width:16px; height:16px;
+    border-radius:50%; display:flex; align-items:center; justify-content:center;
+    padding:0 3px;
+  }
+
+  /* Panes */
+  .tab-pane{ display:none; }
+  .tab-pane.active{ display:block; }
+
+  /* Subscription link row */
+  .sub-row{
+    display:flex; align-items:center; justify-content:space-between;
+    background:var(--box-bg); border:1px solid var(--box-border);
+    border-radius:12px; padding:12px 14px; margin-bottom:14px;
+    gap:12px;
+  }
+  .sub-row-left{ display:flex; align-items:center; gap:10px; min-width:0; }
+  .sub-tag{
+    background:rgba(124,92,255,.15); color:var(--accent);
+    font-size:11px; font-weight:700; padding:3px 8px; border-radius:6px; flex-shrink:0;
+  }
+  .sub-text{ min-width:0; }
+  .sub-text .title{ font-size:14px; font-weight:600; }
+  .sub-text .link{
+    font-size:12px; color:var(--text-dim);
+    white-space:nowrap; overflow:hidden; text-overflow:ellipsis;
+    max-width:360px; display:block;
+  }
+  .sub-actions{ display:flex; gap:8px; flex-shrink:0; }
+
+  /* QR block */
+  .qr-block{
+    display:flex; align-items:center; gap:18px;
+    background:var(--box-bg); border:1px solid var(--box-border);
+    border-radius:12px; padding:16px; margin-bottom:16px;
+    flex-wrap:wrap;
+  }
+  .qr-img{
+    width:88px; height:88px; border-radius:8px; background:#fff;
+    padding:6px; flex-shrink:0;
+  }
+  .qr-img img{ width:100%; height:100%; display:block; }
+  .qr-text .title{ font-size:14px; font-weight:600; margin-bottom:4px; }
+  .qr-text .desc{ font-size:12.5px; color:var(--text-dim); line-height:1.5; }
+
+  /* Apps & Configs */
+  .app-grid{ display:grid; grid-template-columns:repeat(2,1fr); gap:10px; margin-bottom:16px; }
+  .app-link{
+    display:flex; align-items:center; gap:12px;
+    background:var(--box-bg); border:1px solid var(--box-border);
+    border-radius:12px; padding:12px; text-decoration:none; color:var(--text-main);
+    transition:.2s;
+  }
+  .app-link:hover{ border-color:var(--accent); }
+  .app-link-title{ font-size:13px; font-weight:600; }
+  .app-link-sub{ font-size:11px; color:var(--text-dim); }
+
+  .cfg-item{
+    display:flex; align-items:center; justify-content:space-between;
+    background:var(--box-bg); border:1px solid var(--box-border);
+    border-radius:10px; padding:10px 14px; margin-bottom:8px; font-size:13px;
+  }
+  .cfg-name{ overflow:hidden; text-overflow:ellipsis; white-space:nowrap; max-width:80%; }
+
+  .footer-note{
+    text-align:center; font-size:12px; color:var(--text-dim);
+    padding-top:12px; border-top:1px solid var(--divider);
+    display:flex; align-items:center; justify-content:center; gap:6px;
+  }
+  .footer-note svg{ width:13px; height:13px; }
+
+  .toast{
+    position:fixed; bottom:24px; left:50%; transform:translateX(-50%) translateY(20px);
+    background:#1b1b26; color:#fff; padding:10px 18px; border-radius:10px;
+    font-size:13px; opacity:0; transition:.25s; pointer-events:none;
+    border:1px solid rgba(255,255,255,.1);
+  }
+  .toast.show{ opacity:1; transform:translateX(-50%) translateY(0); }
+
+  @media (max-width:520px){
+    .info-grid{ grid-template-columns:repeat(2,1fr); }
+    .usage-section{ flex-direction:column; align-items:flex-start; }
+    .sub-text .link{ max-width:180px; }
+    .app-grid{ grid-template-columns:1fr; }
+  }
+</style>
 </head>
-<body class="min-h-screen flex items-center justify-center p-3 sm:p-6 select-none">
+<body>
 
-  <!-- Main PasarGuard Card Container -->
-  <div class="w-full max-w-[620px] main-wrapper rounded-[24px] p-6 sm:p-8 space-y-6 relative">
-
-    <!-- Header Section -->
-    <div class="flex items-center justify-between">
-      <div class="flex items-center gap-3.5">
-        <div class="w-10 h-10 rounded-2xl bg-cyan-500 flex items-center justify-center text-slate-950 shadow-md shadow-cyan-500/20">
-          <i class="fa-solid fa-wifi text-sm"></i>
-        </div>
-        <div>
-          <h1 data-i18n="title" class="text-sm font-bold text-white tracking-wide">Subscription info</h1>
-          <p id="client-remark" class="text-[11px] text-slate-400 font-mono tracking-tight">8eaf3wq0tewcs06f - Test ❤️</p>
-        </div>
+<div class="card">
+  <!-- Header -->
+  <div class="header">
+    <div class="header-left">
+      <div class="app-icon">
+        <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.55a11 11 0 0 1 14.08 0"/><path d="M1.42 9a16 16 0 0 1 21.16 0"/><path d="M8.53 16.11a6 6 0 0 1 6.95 0"/><circle cx="12" cy="20" r="1" fill="#fff" stroke="none"/></svg>
       </div>
-      
-      <!-- Theme & Language Controllers -->
-      <div class="flex items-center gap-2 relative">
-        <button id="theme-btn" class="w-8 h-8 rounded-xl card-cell flex items-center justify-center text-slate-400 hover:text-white transition">
-          <i id="theme-icon" class="fa-regular fa-moon text-xs"></i>
-        </button>
-        <button id="lang-btn" class="w-8 h-8 rounded-xl card-cell flex items-center justify-center text-slate-400 hover:text-white transition">
-          <i class="fa-solid fa-sliders text-xs"></i>
-        </button>
-
-        <!-- Language Modal/Dropdown -->
-        <div id="lang-menu" class="hidden absolute top-10 ltr:right-0 rtl:left-0 z-50 w-36 card-cell rounded-2xl p-1.5 shadow-2xl border space-y-1">
-          <button onclick="changeLang('en')" class="w-full text-left px-3 py-1.5 text-xs rounded-xl hover:bg-cyan-500/10 hover:text-cyan-400 text-slate-200 flex items-center justify-between transition">
-            <span>English</span>
-            <i class="fa-solid fa-check text-[10px] text-cyan-400 check-en"></i>
-          </button>
-          <button onclick="changeLang('fa')" class="w-full text-right px-3 py-1.5 text-xs rounded-xl hover:bg-cyan-500/10 hover:text-cyan-400 text-slate-200 flex items-center justify-between transition">
-            <span>فارسی</span>
-            <i class="fa-solid fa-check text-[10px] text-cyan-400 check-fa hidden"></i>
-          </button>
-        </div>
-      </div>
-    </div>
-
-    <!-- Exact PasarGuard Grid Structure (Left: Circle Gauge | Right: Quota & Details) -->
-    <div class="flex flex-col sm:flex-row gap-5 items-start">
-      
-      <!-- Left: Circular Gauge Alone -->
-      <div class="relative w-32 h-32 flex-shrink-0 flex items-center justify-center self-center sm:self-auto">
-        <svg class="w-full h-full gauge-circle" viewBox="0 0 100 100">
-          <circle cx="50" cy="50" r="40" stroke-width="7" fill="transparent" class="track-circle"/>
-          <circle id="gauge-bar" cx="50" cy="50" r="40" stroke="#a78bfa" stroke-width="7" stroke-linecap="round" fill="transparent" stroke-dasharray="251.2" stroke-dashoffset="251.2" class="gauge-progress"/>
-        </svg>
-        <div class="absolute flex flex-col items-center justify-center text-center">
-          <span id="stat-percentage" class="text-lg font-bold text-white font-mono leading-none">0.0%</span>
-          <span data-i18n="usage" class="text-[10px] text-slate-400 mt-1 font-medium">Usage</span>
-        </div>
-      </div>
-
-      <!-- Right: Remaining Banner + 3 Rows of Metrics -->
-      <div class="flex-grow w-full space-y-3">
-        
-        <!-- Remaining Quota -->
-        <div class="flex flex-col">
-          <span data-i18n="remaining" class="text-[10px] text-slate-400 uppercase tracking-widest font-medium">Remaining</span>
-          <div class="flex items-baseline gap-1.5 mt-0.5 dir-ltr">
-            <span id="stat-remaining" class="text-3xl sm:text-4xl font-black text-white font-mono tracking-tight">--</span>
-            <span class="text-sm font-bold text-slate-400 font-mono">GB</span>
-          </div>
-          <span id="stat-total-quota-text" class="text-[11px] text-slate-500 font-mono dir-ltr">of -- GB</span>
-        </div>
-
-        <!-- Metrics Grid (3x3 Cards exactly as in image 2) -->
-        <div class="space-y-2 text-xs">
-          <!-- Row 1: Days left, Expiry, Status -->
-          <div class="grid grid-cols-3 gap-2">
-            <div class="card-cell rounded-xl p-2.5">
-              <div data-i18n="days_left" class="text-[10px] text-slate-400">Days left</div>
-              <div id="stat-days" class="text-xs font-bold text-white font-mono mt-1">--</div>
-            </div>
-            <div class="card-cell rounded-xl p-2.5 col-span-1">
-              <div data-i18n="expiry" class="text-[10px] text-slate-400">Expiry</div>
-              <div id="stat-expiry" class="text-[10px] font-semibold text-slate-200 font-mono mt-1 truncate dir-ltr">--</div>
-            </div>
-            <div class="card-cell rounded-xl p-2.5">
-              <div data-i18n="status" class="text-[10px] text-slate-400">Status</div>
-              <div class="mt-1">
-                <span data-i18n="active" class="inline-block px-2 py-0.5 rounded text-[10px] font-semibold bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">Active</span>
-              </div>
-            </div>
-          </div>
-
-          <!-- Row 2: Downloaded, Uploaded, Total quota -->
-          <div class="grid grid-cols-3 gap-2">
-            <div class="card-cell rounded-xl p-2.5">
-              <div data-i18n="downloaded" class="text-[10px] text-slate-400">Downloaded</div>
-              <div id="stat-download" class="text-[11px] font-semibold text-slate-200 font-mono mt-1 dir-ltr">-- MB</div>
-            </div>
-            <div class="card-cell rounded-xl p-2.5">
-              <div data-i18n="uploaded" class="text-[10px] text-slate-400">Uploaded</div>
-              <div id="stat-upload" class="text-[11px] font-semibold text-slate-200 font-mono mt-1 dir-ltr">-- MB</div>
-            </div>
-            <div class="card-cell rounded-xl p-2.5">
-              <div data-i18n="total_quota" class="text-[10px] text-slate-400">Total quota</div>
-              <div id="stat-total-quota" class="text-[11px] font-semibold text-slate-200 font-mono mt-1 dir-ltr">-- GB</div>
-            </div>
-          </div>
-
-          <!-- Row 3: Last Online -->
-          <div class="card-cell rounded-xl p-2.5">
-            <div data-i18n="last_online" class="text-[10px] text-slate-400">Last Online</div>
-            <div id="stat-last-online" class="text-[11px] font-semibold text-slate-200 font-mono mt-1 dir-ltr">--</div>
-          </div>
-        </div>
-
-      </div>
-    </div>
-
-    <!-- Navigation Tabs -->
-    <div class="flex items-center gap-6 border-b dark:border-slate-800/80 border-slate-200 text-xs font-medium pt-2">
-      <button id="nav-sub" onclick="selectTab('sub')" class="pb-3 text-cyan-400 border-b-2 border-cyan-400 flex items-center gap-2 transition">
-        <i class="fa-solid fa-link text-[11px]"></i>
-        <span data-i18n="tab_sub">Subscription</span>
-      </button>
-      <button id="nav-apps" onclick="selectTab('apps')" class="pb-3 text-slate-400 hover:text-white flex items-center gap-2 transition">
-        <i class="fa-solid fa-shapes text-[11px]"></i>
-        <span data-i18n="tab_apps">Apps</span>
-      </button>
-      <button id="nav-configs" onclick="selectTab('configs')" class="pb-3 text-slate-400 hover:text-white flex items-center gap-2 transition">
-        <i class="fa-solid fa-bars-staggered text-[11px]"></i>
-        <span data-i18n="tab_configs">Configs</span>
-        <span id="badge-configs" class="bg-[#24283b] text-slate-300 text-[9px] px-1.5 py-0.2 rounded-full font-mono">0</span>
-      </button>
-    </div>
-
-    <!-- Content: Subscription -->
-    <div id="pane-sub" class="space-y-3.5">
-      
-      <!-- Copy Link Box (Exact PasarGuard 2-row layout) -->
-      <div class="card-cell p-3.5 rounded-2xl space-y-1.5">
-        <div class="flex items-center justify-between">
-          <div class="flex items-center gap-2">
-            <span class="bg-emerald-500/15 text-emerald-400 text-[10px] px-2 py-0.5 rounded-md font-bold font-mono border border-emerald-500/25">SUB</span>
-            <span data-i18n="tab_sub" class="text-xs font-semibold text-white">Subscription</span>
-          </div>
-          <div class="flex items-center gap-1">
-            <button id="copy-btn" class="w-7 h-7 rounded-lg card-cell hover:opacity-80 flex items-center justify-center text-slate-300 transition" title="Copy">
-              <i class="fa-regular fa-copy text-xs"></i>
-            </button>
-            <button id="qr-modal-btn" class="w-7 h-7 rounded-lg card-cell hover:opacity-80 flex items-center justify-center text-slate-300 transition" title="QR">
-              <i class="fa-solid fa-qrcode text-xs"></i>
-            </button>
-          </div>
-        </div>
-        <div id="sub-url-text" class="text-[11px] text-slate-400 font-mono truncate dir-ltr select-all">
-          Loading...
-        </div>
-      </div>
-
-      <!-- Integrated QR Banner -->
-      <div class="card-cell p-4 rounded-2xl flex items-center gap-5">
-        <div class="p-2 bg-white rounded-xl flex-shrink-0 shadow-md">
-          <div id="qrcode"></div>
-        </div>
-        <div class="space-y-1">
-          <h4 data-i18n="qr_title" class="text-xs font-bold text-white">Scan with your phone</h4>
-          <p data-i18n="qr_desc" class="text-[11px] text-slate-400 leading-relaxed">Scan this code in your VPN app to add the subscription without copying the link.</p>
-        </div>
-      </div>
-
-    </div>
-
-    <!-- Content: Apps -->
-    <div id="pane-apps" class="hidden grid grid-cols-1 sm:grid-cols-2 gap-2.5 text-xs">
-      <a id="app-v2rayng" href="#" class="card-cell p-3.5 rounded-2xl hover:border-cyan-500/40 transition flex items-center gap-3">
-        <div class="w-8 h-8 rounded-xl bg-cyan-500/10 flex items-center justify-center text-cyan-400">
-          <i class="fa-solid fa-paper-plane text-xs"></i>
-        </div>
-        <div>
-          <div class="font-bold text-white text-xs">v2rayNG</div>
-          <div class="text-[10px] text-slate-400">Android Client</div>
-        </div>
-      </a>
-      <a id="app-singbox" href="#" class="card-cell p-3.5 rounded-2xl hover:border-orange-500/40 transition flex items-center gap-3">
-        <div class="w-8 h-8 rounded-xl bg-orange-500/10 flex items-center justify-center text-orange-400">
-          <i class="fa-solid fa-box text-xs"></i>
-        </div>
-        <div>
-          <div class="font-bold text-white text-xs">Sing-box</div>
-          <div class="text-[10px] text-slate-400">Universal Core</div>
-        </div>
-      </a>
-      <a id="app-streisand" href="#" class="card-cell p-3.5 rounded-2xl hover:border-emerald-500/40 transition flex items-center gap-3">
-        <div class="w-8 h-8 rounded-xl bg-emerald-500/10 flex items-center justify-center text-emerald-400">
-          <i class="fa-solid fa-shield text-xs"></i>
-        </div>
-        <div>
-          <div class="font-bold text-white text-xs">Streisand</div>
-          <div class="text-[10px] text-slate-400">iOS Client</div>
-        </div>
-      </a>
-      <a id="app-shadowrocket" href="#" class="card-cell p-3.5 rounded-2xl hover:border-purple-500/40 transition flex items-center gap-3">
-        <div class="w-8 h-8 rounded-xl bg-purple-500/10 flex items-center justify-center text-purple-400">
-          <i class="fa-solid fa-rocket text-xs"></i>
-        </div>
-        <div>
-          <div class="font-bold text-white text-xs">Shadowrocket</div>
-          <div class="text-[10px] text-slate-400">iOS Client</div>
-        </div>
-      </a>
-    </div>
-
-    <!-- Content: Configs -->
-    <div id="pane-configs" class="hidden space-y-2">
-      <div id="configs-container" class="space-y-1.5 text-xs max-h-60 overflow-y-auto pr-1">
-        <div data-i18n="loading_nodes" class="text-center py-6 text-slate-500 font-mono">Loading nodes...</div>
-      </div>
-    </div>
-
-    <!-- Footer -->
-    <div class="text-[10px] text-slate-500 font-mono pt-1 flex items-center justify-between">
       <div>
-        <i class="fa-solid fa-rotate text-[9px] mr-1"></i> <span data-i18n="auto_updates">Auto-updates every 12 hours</span>
+        <p class="header-title" data-i18n="title">Subscription info</p>
       </div>
-      <span>PasarGuard</span>
     </div>
+    <div class="header-actions">
+      <!-- Theme Switcher -->
+      <div class="icon-btn" id="themeToggle" title="Toggle theme">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" id="themeIcon"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+      </div>
+      <!-- Language Switcher -->
+      <div class="icon-btn" id="langToggle" title="Change Language">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
+      </div>
+      <!-- Copy Link Button -->
+      <div class="icon-btn" id="shareBtn" title="Copy Subscription Link">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="M21 15l-5-5L5 21"/></svg>
+      </div>
 
+      <!-- Language Dropdown -->
+      <div class="lang-menu" id="langMenu">
+        <button class="lang-item" onclick="setLanguage('en')">
+          <span>English</span>
+          <span class="chk-en">✓</span>
+        </button>
+        <button class="lang-item" onclick="setLanguage('fa')">
+          <span>فارسی</span>
+          <span class="chk-fa" style="display:none;">✓</span>
+        </button>
+      </div>
+    </div>
   </div>
 
-  <script>
-    const SUB_URL = "https://late-truth-84b6.phoenix1198811.workers.dev/sub/djMsMSwxNzg5OTQ1NTEy.d1JmvrNN3xP-emhSxOLdoOJuU8YZnBCPZp5pTJm3EnI";
+  <!-- Usage -->
+  <div class="usage-section">
+    <div class="ring-wrap">
+      <svg viewBox="0 0 120 120">
+        <defs>
+          <linearGradient id="ringGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+            <stop offset="0%" stop-color="#7c5cff"/>
+            <stop offset="100%" stop-color="#4f8cff"/>
+          </linearGradient>
+        </defs>
+        <circle class="ring-bg" cx="60" cy="60" r="52"/>
+        <circle class="ring-fg" id="ringFg" cx="60" cy="60" r="52" stroke-dasharray="326.7" stroke-dashoffset="326.7"/>
+      </svg>
+      <div class="ring-center">
+        <div class="ring-percent" id="ringPercent">0%</div>
+        <div class="ring-label" data-i18n="usage">Usage</div>
+      </div>
+    </div>
+    <div class="usage-info">
+      <div class="usage-label" data-i18n="remaining">Remaining</div>
+      <div class="usage-value dir-ltr">
+        <span class="num" id="remainVal">--</span>
+        <span class="unit">GB</span>
+      </div>
+      <div class="usage-of"><span data-i18n="of">of</span> <span id="totalVal">--</span>GB</div>
+    </div>
+  </div>
 
-    const dict = {
-      en: {
-        title: "Subscription info",
-        remaining: "Remaining",
-        usage: "Usage",
-        days_left: "Days left",
-        expiry: "Expiry",
-        status: "Status",
-        active: "Active",
-        downloaded: "Downloaded",
-        uploaded: "Uploaded",
-        total_quota: "Total quota",
-        last_online: "Last Online",
-        tab_sub: "Subscription",
-        tab_apps: "Apps",
-        tab_configs: "Configs",
-        qr_title: "Scan with your phone",
-        qr_desc: "Scan this code in your VPN app to add the subscription without copying the link.",
-        auto_updates: "Auto-updates every 12 hours",
-        loading_nodes: "Loading nodes...",
-        copied: "Subscription link copied!",
-        of: "of"
-      },
-      fa: {
-        title: "اطلاعات سابسکریپشن",
-        remaining: "باقیمانده",
-        usage: "مصرف",
-        days_left: "روزهای مانده",
-        expiry: "انقضا",
-        status: "وضعیت",
-        active: "فعال",
-        downloaded: "دانلود",
-        uploaded: "آپلود",
-        total_quota: "کل حجم",
-        last_online: "آخرین اتصال",
-        tab_sub: "اشتراک",
-        tab_apps: "برنامه‌ها",
-        tab_configs: "کانفیگ‌ها",
-        qr_title: "اسکن با گوشی",
-        qr_desc: "این بارکد را در برنامه VPN خود اسکن کنید تا اشتراک بدون نیاز به کپی اضافه شود.",
-        auto_updates: "بروزرسانی خودکار هر ۱۲ ساعت",
-        loading_nodes: "در حال بارگذاری...",
-        copied: "لینک با موفقیت کپی شد!",
-        of: "از"
-      }
-    };
+  <!-- Info grid -->
+  <div class="info-grid">
+    <div class="info-box"><div class="label" data-i18n="days_left">Days left</div><div class="value" id="valDays">--</div></div>
+    <div class="info-box"><div class="label" data-i18n="expiry">Expiry</div><div class="value" id="valExpiry">--</div></div>
+    <div class="info-box"><div class="label" data-i18n="status">Status</div><div class="value"><span class="status-badge" id="valStatus" data-i18n="active">Active</span></div></div>
 
-    let activeLang = localStorage.getItem('pg_lang') || 'en';
+    <div class="info-box"><div class="label" data-i18n="downloaded">Downloaded</div><div class="value" id="valDown">-- MB</div></div>
+    <div class="info-box"><div class="label" data-i18n="uploaded">Uploaded</div><div class="value" id="valUp">-- MB</div></div>
+    <div class="info-box"><div class="label" data-i18n="total_quota">Total quota</div><div class="value" id="valTotal">-- GB</div></div>
 
-    function changeLang(lang) {
-      activeLang = lang;
-      localStorage.setItem('pg_lang', lang);
-      document.documentElement.lang = lang;
-      document.documentElement.dir = (lang === 'fa') ? 'rtl' : 'ltr';
+    <div class="info-box" style="grid-column: span 3;"><div class="label" data-i18n="last_online">Last Online</div><div class="value" id="valOnline">--</div></div>
+  </div>
 
-      document.querySelectorAll('[data-i18n]').forEach(el => {
-        const k = el.getAttribute('data-i18n');
-        if (dict[lang][k]) el.innerText = dict[lang][k];
-      });
+  <!-- Tabs -->
+  <div class="tabs">
+    <button class="tab active" data-tab="sub">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>
+      <span data-i18n="tab_sub">Subscription</span>
+    </button>
+    <button class="tab" data-tab="apps">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/></svg>
+      <span data-i18n="tab_apps">Apps</span>
+    </button>
+    <button class="tab" data-tab="configs">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3" y2="6"/><line x1="3" y1="12" x2="3" y2="12"/><line x1="3" y1="18" x2="3" y2="18"/></svg>
+      <span data-i18n="tab_configs">Configs</span>
+      <span class="badge" id="cfgBadge">0</span>
+    </button>
+  </div>
 
-      document.querySelector('.check-en').classList.toggle('hidden', lang !== 'en');
-      document.querySelector('.check-fa').classList.toggle('hidden', lang !== 'fa');
-      document.getElementById('lang-menu').classList.add('hidden');
+  <!-- Subscription Tab Pane -->
+  <div class="tab-pane active" id="pane-sub">
+    <div class="sub-row">
+      <div class="sub-row-left">
+        <span class="sub-tag">SUB</span>
+        <div class="sub-text">
+          <div class="title" data-i18n="tab_sub">Subscription</div>
+          <span class="link" id="subLink">Loading...</span>
+        </div>
+      </div>
+      <div class="sub-actions">
+        <div class="icon-btn" id="copyBtn" title="Copy link">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+        </div>
+        <div class="icon-btn" id="qrBtn" title="QR code">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
+        </div>
+      </div>
+    </div>
+
+    <div class="qr-block">
+      <div class="qr-img">
+        <img id="qrImage" src="" alt="QR code">
+      </div>
+      <div class="qr-text">
+        <div class="title" data-i18n="qr_title">Scan with your phone</div>
+        <div class="desc" data-i18n="qr_desc">Scan this code in your VPN app to add the subscription without copying the link.</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Apps Tab Pane -->
+  <div class="tab-pane" id="pane-apps">
+    <div class="app-grid">
+      <a class="app-link" id="app-v2rayng" href="#">
+        <div>
+          <div class="app-link-title">v2rayNG</div>
+          <div class="app-link-sub">Android Client</div>
+        </div>
+      </a>
+      <a class="app-link" id="app-singbox" href="#">
+        <div>
+          <div class="app-link-title">Sing-box</div>
+          <div class="app-link-sub">Universal Core</div>
+        </div>
+      </a>
+      <a class="app-link" id="app-streisand" href="#">
+        <div>
+          <div class="app-link-title">Streisand</div>
+          <div class="app-link-sub">iOS Client</div>
+        </div>
+      </a>
+      <a class="app-link" id="app-shadowrocket" href="#">
+        <div>
+          <div class="app-link-title">Shadowrocket</div>
+          <div class="app-link-sub">iOS Client</div>
+        </div>
+      </a>
+    </div>
+  </div>
+
+  <!-- Configs Tab Pane -->
+  <div class="tab-pane" id="pane-configs">
+    <div id="cfgContainer">
+      <div style="text-align:center; padding:20px; color:var(--text-dim); font-size:13px;" data-i18n="loading_nodes">Loading configurations...</div>
+    </div>
+  </div>
+
+  <div class="footer-note">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+    <span data-i18n="auto_updates">Auto-updates every 12 hours</span>
+  </div>
+</div>
+
+<div class="toast" id="toast">Link copied!</div>
+
+<script>
+  const REAL_SUB_URL = "https://late-truth-84b6.phoenix1198811.workers.dev/sub/djMsMSwxNzg5OTQ1NTEy.d1JmvrNN3xP-emhSxOLdoOJuU8YZnBCPZp5pTJm3EnI";
+
+  const i18n = {
+    en: {
+      title: "Subscription info",
+      remaining: "Remaining",
+      usage: "Usage",
+      of: "of",
+      days_left: "Days left",
+      expiry: "Expiry",
+      status: "Status",
+      active: "Active",
+      downloaded: "Downloaded",
+      uploaded: "Uploaded",
+      total_quota: "Total quota",
+      last_online: "Last Online",
+      tab_sub: "Subscription",
+      tab_apps: "Apps",
+      tab_configs: "Configs",
+      qr_title: "Scan with your phone",
+      qr_desc: "Scan this code in your VPN app to add the subscription without copying the link.",
+      auto_updates: "Auto-updates every 12 hours",
+      loading_nodes: "Loading configurations...",
+      no_configs: "No configs found",
+      copied: "Subscription link copied!",
+      cfg_copied: "Config copied!"
+    },
+    fa: {
+      title: "اطلاعات سابسکریپشن",
+      remaining: "حجم باقیمانده",
+      usage: "مصرف",
+      of: "از",
+      days_left: "روزهای باقیمانده",
+      expiry: "تاریخ انقضا",
+      status: "وضعیت",
+      active: "فعال",
+      downloaded: "دانلود شده",
+      uploaded: "آپلود شده",
+      total_quota: "کل حجم",
+      last_online: "آخرین اتصال",
+      tab_sub: "لینک اشتراک",
+      tab_apps: "برنامه‌ها",
+      tab_configs: "کانفیگ‌ها",
+      qr_title: "اسکن با گوشی",
+      qr_desc: "این بارکد را در برنامه VPN گوشی خود اسکن کنید تا اشتراک افزوده شود.",
+      auto_updates: "بروزرسانی خودکار هر ۱۲ ساعت",
+      loading_nodes: "در حال دریافت کانفیگ‌ها...",
+      no_configs: "هیچ کانفیگی یافت نشد",
+      copied: "لینک سابسکریپشن با موفقیت کپی شد!",
+      cfg_copied: "کانفیگ کپی شد!"
     }
+  };
 
-    // Theme Switch
-    function setupTheme() {
-      const isDark = localStorage.getItem('pg_theme') !== 'light';
-      if (isDark) {
-        document.documentElement.classList.add('dark');
-        document.getElementById('theme-icon').className = 'fa-regular fa-moon text-xs';
-      } else {
-        document.documentElement.classList.remove('dark');
-        document.getElementById('theme-icon').className = 'fa-regular fa-sun text-xs';
+  let currentLang = localStorage.getItem('panel_lang') || 'fa';
+
+  function setLanguage(lang) {
+    currentLang = lang;
+    localStorage.setItem('panel_lang', lang);
+    document.documentElement.lang = lang;
+    document.documentElement.dir = (lang === 'fa') ? 'rtl' : 'ltr';
+
+    document.querySelectorAll('[data-i18n]').forEach(el => {
+      const key = el.getAttribute('data-i18n');
+      if (i18n[lang][key]) {
+        el.textContent = i18n[lang][key];
       }
-    }
-
-    document.getElementById('theme-btn').onclick = () => {
-      const isDark = document.documentElement.classList.contains('dark');
-      if (isDark) {
-        document.documentElement.classList.remove('dark');
-        localStorage.setItem('pg_theme', 'light');
-        document.getElementById('theme-icon').className = 'fa-regular fa-sun text-xs';
-      } else {
-        document.documentElement.classList.add('dark');
-        localStorage.setItem('pg_theme', 'dark');
-        document.getElementById('theme-icon').className = 'fa-regular fa-moon text-xs';
-      }
-    };
-
-    document.getElementById('lang-btn').onclick = (e) => {
-      e.stopPropagation();
-      document.getElementById('lang-menu').classList.toggle('hidden');
-    };
-    document.addEventListener('click', () => {
-      document.getElementById('lang-menu').classList.add('hidden');
     });
 
-    function selectTab(t) {
-      ['sub', 'apps', 'configs'].forEach(name => {
-        document.getElementById('pane-' + name).classList.add('hidden');
-        document.getElementById('nav-' + name).className = 'pb-3 text-slate-400 hover:text-white flex items-center gap-2 transition';
-      });
-      document.getElementById('pane-' + t).classList.remove('hidden');
-      document.getElementById('nav-' + t).className = 'pb-3 text-cyan-400 border-b-2 border-cyan-400 flex items-center gap-2 transition';
-    }
+    document.querySelector('.chk-en').style.display = (lang === 'en') ? 'inline' : 'none';
+    document.querySelector('.chk-fa').style.display = (lang === 'fa') ? 'inline' : 'none';
 
-    function createQR(text) {
-      const el = document.getElementById("qrcode");
-      el.innerHTML = "";
-      new QRCode(el, {
-        text: text,
-        width: 105,
-        height: 105,
-        colorDark : "#000000",
-        colorLight : "#ffffff",
-        correctLevel : QRCode.CorrectLevel.M
-      });
-    }
+    document.getElementById('langMenu').classList.remove('show');
+  }
 
-    function updateGauge(pct) {
-      const bar = document.getElementById('gauge-bar');
-      const c = 2 * Math.PI * 40; // 251.2
-      const offset = c - (pct / 100) * c;
-      bar.style.strokeDashoffset = offset;
-    }
+  // Toast
+  const toast = document.getElementById('toast');
+  function showToast(msg) {
+    toast.textContent = msg;
+    toast.classList.add('show');
+    setTimeout(() => toast.classList.remove('show'), 1600);
+  }
 
-    async function start() {
-      setupTheme();
-      changeLang(activeLang);
+  // Theme toggle
+  document.getElementById('themeToggle').addEventListener('click', () => {
+    document.body.classList.toggle('light');
+    localStorage.setItem('panel_theme', document.body.classList.contains('light') ? 'light' : 'dark');
+  });
+  if (localStorage.getItem('panel_theme') === 'light') {
+    document.body.classList.add('light');
+  }
 
-      document.getElementById('sub-url-text').innerText = SUB_URL;
-      createQR(SUB_URL);
+  // Language Dropdown Toggle
+  const langToggle = document.getElementById('langToggle');
+  const langMenu = document.getElementById('langMenu');
+  langToggle.addEventListener('click', (e) => {
+    e.stopPropagation();
+    langMenu.classList.toggle('show');
+  });
+  document.addEventListener('click', () => {
+    langMenu.classList.remove('show');
+  });
 
-      document.getElementById('app-v2rayng').href = "v2rayng://install-config?url=" + encodeURIComponent(SUB_URL);
-      document.getElementById('app-singbox').href = "sing-box://import-remote-profile?url=" + encodeURIComponent(SUB_URL);
-      document.getElementById('app-streisand').href = "streisand://import/" + SUB_URL;
-      document.getElementById('app-shadowrocket').href = "sub://" + btoa(SUB_URL);
+  // Tab switcher
+  document.querySelectorAll('.tab').forEach(tab => {
+    tab.addEventListener('click', () => {
+      document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+      document.querySelectorAll('.tab-pane').forEach(p => p.classList.remove('active'));
+      tab.classList.add('active');
+      const targetPane = document.getElementById('pane-' + tab.dataset.tab);
+      if (targetPane) targetPane.classList.add('active');
+    });
+  });
 
-      document.getElementById('copy-btn').onclick = () => {
-        navigator.clipboard.writeText(SUB_URL);
-        alert(dict[activeLang].copied);
-      };
+  // Copy buttons
+  document.getElementById('copyBtn').addEventListener('click', () => {
+    navigator.clipboard.writeText(REAL_SUB_URL).then(() => showToast(i18n[currentLang].copied));
+  });
+  document.getElementById('shareBtn').addEventListener('click', () => {
+    navigator.clipboard.writeText(REAL_SUB_URL).then(() => showToast(i18n[currentLang].copied));
+  });
 
-      const now = new Date();
-      const pad = n => String(n).padStart(2, '0');
-      document.getElementById('stat-last-online').innerText = 
-        `${pad(now.getMonth() + 1)}/${pad(now.getDate())}/${now.getFullYear()}, ${pad(now.getHours())}:${pad(now.getMinutes())}:${pad(now.getSeconds())}`;
+  // Circular gauge updater
+  function setGauge(pct) {
+    const circumference = 2 * Math.PI * 52;
+    const ringFg = document.getElementById('ringFg');
+    ringFg.setAttribute('stroke-dasharray', circumference);
+    const offset = circumference - (pct / 100) * circumference;
+    requestAnimationFrame(() => { ringFg.style.strokeDashoffset = offset; });
+    document.getElementById('ringPercent').textContent = pct.toFixed(1) + '%';
+  }
 
-      try {
-        const res = await fetch('/get-sub-data');
-        const userInfo = res.headers.get('subscription-userinfo');
+  async function loadData() {
+    setLanguage(currentLang);
 
-        if (userInfo) {
-          const s = {};
-          userInfo.split(';').forEach(i => {
-            const [k, v] = i.trim().split('=');
-            if (k && v) s[k] = parseInt(v, 10);
-          });
+    // Initial bindings
+    document.getElementById('subLink').textContent = REAL_SUB_URL;
+    document.getElementById('qrImage').src =
+      'https://api.qrserver.com/v1/create-qr-code/?size=200x200&margin=0&data=' + encodeURIComponent(REAL_SUB_URL);
 
-          const up = s.upload || 0;
-          const down = s.download || 0;
-          const total = s.total || (10 * 1024 * 1024 * 1024);
-          const used = up + down;
-          const rem = Math.max(0, total - used);
+    // App links
+    document.getElementById('app-v2rayng').href = "v2rayng://install-config?url=" + encodeURIComponent(REAL_SUB_URL);
+    document.getElementById('app-singbox').href = "sing-box://import-remote-profile?url=" + encodeURIComponent(REAL_SUB_URL);
+    document.getElementById('app-streisand').href = "streisand://import/" + REAL_SUB_URL;
+    document.getElementById('app-shadowrocket').href = "sub://" + btoa(REAL_SUB_URL);
 
-          const toGB = b => (b / (1024 ** 3)).toFixed(2);
-          const toMB = b => (b / (1024 ** 2)).toFixed(2);
+    // Live Last Online
+    const now = new Date();
+    const pad = n => String(n).padStart(2, '0');
+    document.getElementById('valOnline').textContent = 
+      `${pad(now.getMonth() + 1)}/${pad(now.getDate())}/${now.getFullYear()}, ${pad(now.getHours())}:${pad(now.getMinutes())}:${pad(now.getSeconds())}`;
 
-          document.getElementById('stat-remaining').innerText = toGB(rem);
-          document.getElementById('stat-total-quota-text').innerText = `${dict[activeLang].of} ${toGB(total)} GB`;
-          document.getElementById('stat-total-quota').innerText = toGB(total) + ' GB';
-          document.getElementById('stat-download').innerText = toMB(down) + ' MB';
-          document.getElementById('stat-upload').innerText = toMB(up) + ' MB';
+    try {
+      const res = await fetch('/get-sub-data');
+      const userInfo = res.headers.get('subscription-userinfo');
 
-          const pct = total > 0 ? Math.min(100, (used / total) * 100).toFixed(1) : 0;
-          document.getElementById('stat-percentage').innerText = pct + '%';
-          updateGauge(pct);
+      if (userInfo) {
+        const stats = {};
+        userInfo.split(';').forEach(item => {
+          const [k, v] = item.trim().split('=');
+          if (k && v) stats[k] = parseInt(v, 10);
+        });
 
-          if (s.expire) {
-            const exp = new Date(s.expire * 1000);
-            document.getElementById('stat-expiry').innerText = 
-              `${pad(exp.getMonth() + 1)}/${pad(exp.getDate())}/${exp.getFullYear()}, 00:00:00`;
-            const days = Math.max(0, Math.ceil((exp - new Date()) / (1000 * 60 * 60 * 24)));
-            document.getElementById('stat-days').innerText = days;
-          }
+        const up = stats.upload || 0;
+        const down = stats.download || 0;
+        const total = stats.total || (10 * 1024 * 1024 * 1024);
+        const used = up + down;
+        const rem = Math.max(0, total - used);
+
+        const toGB = b => (b / (1024 ** 3)).toFixed(2);
+        const toMB = b => (b / (1024 ** 2)).toFixed(2);
+
+        document.getElementById('remainVal').textContent = toGB(rem);
+        document.getElementById('totalVal').textContent = toGB(total);
+        document.getElementById('valTotal').textContent = toGB(total) + ' GB';
+        document.getElementById('valDown').textContent = toMB(down) + ' MB';
+        document.getElementById('valUp').textContent = toMB(up) + ' MB';
+
+        const pct = total > 0 ? Math.min(100, (used / total) * 100) : 0;
+        setGauge(pct);
+
+        if (stats.expire) {
+          const exp = new Date(stats.expire * 1000);
+          document.getElementById('valExpiry').textContent = 
+            `${pad(exp.getMonth() + 1)}/${pad(exp.getDate())}/${exp.getFullYear()}, 00:00:00`;
+          const days = Math.max(0, Math.ceil((exp - new Date()) / (1000 * 60 * 60 * 24)));
+          document.getElementById('valDays').textContent = days;
         }
-
-        const raw = await res.text();
-        let decoded = raw;
-        try { decoded = atob(raw.trim()); } catch(e) {}
-
-        const configs = decoded.split('\n').map(c => c.trim()).filter(c => c.length > 5);
-        document.getElementById('badge-configs').innerText = configs.length;
-
-        const container = document.getElementById('configs-container');
-        container.innerHTML = '';
-        if (configs.length === 0) {
-          container.innerHTML = '<div class="text-center py-4 text-slate-500 font-mono">No nodes available</div>';
-        } else {
-          configs.forEach((cfg, idx) => {
-            const name = cfg.includes('#') ? decodeURIComponent(cfg.split('#')[1]) : ('Config #' + (idx + 1));
-            const card = document.createElement('div');
-            card.className = 'card-cell p-2.5 rounded-xl flex items-center justify-between gap-2';
-            card.innerHTML = `
-              <div class="truncate flex items-center gap-2">
-                <span class="w-1.5 h-1.5 rounded-full bg-cyan-400"></span>
-                <span class="font-medium text-slate-200 text-xs truncate">${name}</span>
-              </div>
-              <button onclick="navigator.clipboard.writeText('${cfg}'); alert('Copied!');" class="w-6 h-6 rounded-lg card-cell hover:opacity-80 flex items-center justify-center text-slate-300 flex-shrink-0 transition">
-                <i class="fa-regular fa-copy text-[10px]"></i>
-              </button>
-            `;
-            container.appendChild(card);
-          });
-        }
-
-      } catch (err) {
-        console.error("Fetch sub error:", err);
       }
-    }
 
-    window.addEventListener('DOMContentLoaded', start);
-  </script>
+      // Fetch configs
+      const raw = await res.text();
+      let decoded = raw;
+      try { decoded = atob(raw.trim()); } catch (e) {}
+
+      const configs = decoded.split('\n').map(c => c.trim()).filter(c => c.length > 5);
+      document.getElementById('cfgBadge').textContent = configs.length;
+
+      const container = document.getElementById('cfgContainer');
+      container.innerHTML = '';
+
+      if (configs.length === 0) {
+        container.innerHTML = `<div style="text-align:center; padding:20px; color:var(--text-dim); font-size:13px;">${i18n[currentLang].no_configs}</div>`;
+      } else {
+        configs.forEach((cfg, idx) => {
+          const name = cfg.includes('#') ? decodeURIComponent(cfg.split('#')[1]) : ('Config #' + (idx + 1));
+          const row = document.createElement('div');
+          row.className = 'cfg-item';
+          row.innerHTML = `
+            <div class="cfg-name">${name}</div>
+            <div class="icon-btn" title="Copy Config" style="width:30px; height:30px;">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:14px; height:14px;"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+            </div>
+          `;
+          row.querySelector('.icon-btn').addEventListener('click', () => {
+            navigator.clipboard.writeText(cfg).then(() => showToast(i18n[currentLang].cfg_copied));
+          });
+          container.appendChild(row);
+        });
+      }
+
+    } catch (err) {
+      console.error('Data fetch error:', err);
+    }
+  }
+
+  window.addEventListener('DOMContentLoaded', loadData);
+</script>
+
 </body>
 </html>
