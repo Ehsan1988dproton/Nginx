@@ -479,7 +479,6 @@
       }
     });
 
-    // بروزرسانی ترجمه وضعیت بر اساس کلاس آنلاین یا آفلاین بودن
     const statusBadge = document.getElementById('valStatus');
     if (statusBadge.classList.contains('online')) {
       statusBadge.textContent = i18n[lang].online;
@@ -550,7 +549,6 @@
   async function loadData() {
     setLanguage(currentLang);
 
-    // Initial bindings
     document.getElementById('subLink').textContent = REAL_SUB_URL;
     document.getElementById('qrImage').src =
       'https://api.qrserver.com/v1/create-qr-code/?size=200x200&margin=0&data=' + encodeURIComponent(REAL_SUB_URL);
@@ -559,55 +557,53 @@
 
     try {
       const res = await fetch('/get-sub-data');
+      if (!res.ok) throw new Error("HTTP error! status: " + res.status);
+      
       const userInfo = res.headers.get('subscription-userinfo');
+      if (!userInfo) throw new Error("Missing subscription-userinfo header");
 
-      if (userInfo) {
-        // تغییر وضعیت به Online (سبز) چون دیتا با موفقیت دریافت شد
-        statusBadge.className = "status-badge online";
-        statusBadge.setAttribute('data-i18n', 'online');
-        statusBadge.textContent = i18n[currentLang].online;
+      // وضعیت اتصال موفق (Online)
+      statusBadge.className = "status-badge online";
+      statusBadge.setAttribute('data-i18n', 'online');
+      statusBadge.textContent = i18n[currentLang].online;
 
-        const stats = {};
-        userInfo.split(';').forEach(item => {
-          const [k, v] = item.trim().split('=');
-          if (k && v) stats[k] = parseInt(v, 10);
-        });
+      const stats = {};
+      userInfo.split(';').forEach(item => {
+        const [k, v] = item.trim().split('=');
+        if (k && v) stats[k] = parseInt(v, 10);
+      });
 
-        const up = stats.upload || 0;
-        const down = stats.download || 0;
-        const total = stats.total || (10 * 1024 * 1024 * 1024);
-        const used = up + down;
-        const rem = Math.max(0, total - used);
+      const up = stats.upload || 0;
+      const down = stats.download || 0;
+      const total = stats.total || (10 * 1024 * 1024 * 1024);
+      const used = up + down;
+      const rem = Math.max(0, total - used);
 
-        const toGB = b => (b / (1024 ** 3)).toFixed(2);
-        const toMB = b => (b / (1024 ** 2)).toFixed(2);
+      const toGB = b => (b / (1024 ** 3)).toFixed(2);
+      const toMB = b => (b / (1024 ** 2)).toFixed(2);
 
-        document.getElementById('remainVal').textContent = toGB(rem);
-        document.getElementById('totalVal').textContent = toGB(total);
-        document.getElementById('valTotal').textContent = toGB(total) + ' GB';
-        document.getElementById('valDown').textContent = toGB(down) + ' GB';
-        document.getElementById('valUp').textContent = toMB(up) + ' MB';
+      document.getElementById('remainVal').textContent = toGB(rem);
+      document.getElementById('totalVal').textContent = toGB(total);
+      document.getElementById('valTotal').textContent = toGB(total) + ' GB';
+      document.getElementById('valDown').textContent = toGB(down) + ' GB';
+      document.getElementById('valUp').textContent = toMB(up) + ' MB';
 
-        const pct = total > 0 ? Math.min(100, (used / total) * 100) : 0;
-        setGauge(pct);
+      const pct = total > 0 ? Math.min(100, (used / total) * 100) : 0;
+      setGauge(pct);
 
-        if (stats.expire) {
-          const exp = new Date(stats.expire * 1000);
-          const pad = n => String(n).padStart(2, '0');
-          document.getElementById('valExpiry').textContent = 
-            `${pad(exp.getMonth() + 1)}/${pad(exp.getDate())}/${exp.getFullYear()}, 00:00:00`;
-          const days = Math.max(0, Math.ceil((exp - new Date()) / (1000 * 60 * 60 * 24)));
-          document.getElementById('valDays').textContent = days;
-        }
-
-        // Live Last Online بر اساس زمان دریافت موفق دیتای جدید
-        const now = new Date();
+      if (stats.expire) {
+        const exp = new Date(stats.expire * 1000);
         const pad = n => String(n).padStart(2, '0');
-        document.getElementById('valOnline').textContent = 
-          `${pad(now.getMonth() + 1)}/${pad(now.getDate())}/${now.getFullYear()}, ${pad(now.getHours())}:${pad(now.getMinutes())}:${pad(now.getSeconds())}`;
-      } else {
-        throw new Error("No userinfo header");
+        document.getElementById('valExpiry').textContent = 
+          `${pad(exp.getMonth() + 1)}/${pad(exp.getDate())}/${exp.getFullYear()}, 00:00:00`;
+        const days = Math.max(0, Math.ceil((exp - new Date()) / (1000 * 60 * 60 * 24)));
+        document.getElementById('valDays').textContent = days;
       }
+
+      const now = new Date();
+      const pad = n => String(n).padStart(2, '0');
+      document.getElementById('valOnline').textContent = 
+        `${pad(now.getMonth() + 1)}/${pad(now.getDate())}/${now.getFullYear()}, ${pad(now.getHours())}:${pad(now.getMinutes())}:${pad(now.getSeconds())}`;
 
       // Fetch configs
       const raw = await res.text();
@@ -642,7 +638,7 @@
 
     } catch (err) {
       console.error('Data fetch error:', err);
-      // اگر ارتباط برقرار نشد، وضعیت روی Offline (قرمز) قرار می‌گیرد
+      // وضعیت آفلاین (قرمز) در صورت بروز هرگونه خطا یا قطعی ارتباط
       statusBadge.className = "status-badge offline";
       statusBadge.setAttribute('data-i18n', 'offline');
       statusBadge.textContent = i18n[currentLang].offline;
