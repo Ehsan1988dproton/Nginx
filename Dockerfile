@@ -1,9 +1,10 @@
 FROM nginx:alpine
 
-# کپی تنظیمات روت‌ها و پروکسی
+# حذف کانفیگ پیش‌فرض و جایگزینی با کانفیگ ما
+RUN rm /etc/nginx/conf.d/default.conf
 COPY default.conf /etc/nginx/conf.d/default.conf
 
-# کپی قالب پاسارگاد
+# قرار دادن فایل قالب
 COPY index.html /usr/share/nginx/html/index.html
 
 EXPOSE 80
