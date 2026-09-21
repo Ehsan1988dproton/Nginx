@@ -1,222 +1,324 @@
 <!DOCTYPE html>
-<html lang="fa" dir="rtl" class="dark">
+<html lang="en">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Subscription Info</title>
+  <title>Subscription info</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
   <style>
-    @import url('https://fonts.googleapis.com/css2?family=Vazirmatn:wght@300;400;500;600;700&display=swap');
-    * { font-family: 'Vazirmatn', -apple-system, sans-serif; }
-    .bg-main { background-color: #0b0f19; }
-    .card-bg { background-color: #111827; border: 1px solid #1f2937; }
-    .circle-progress { transform: rotate(-90deg); transform-origin: 50% 50%; }
-    .circle-progress-bar { transition: stroke-dashoffset 0.8s ease-in-out; }
+    body {
+      background-color: #0b111e;
+      color: #94a3b8;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    }
+    .panel-card {
+      background-color: #121927;
+      border: 1px solid #1e293b;
+    }
+    .inner-box {
+      background-color: #162032;
+      border: 1px solid #1e293b;
+    }
+    .circle-svg {
+      transform: rotate(-90deg);
+    }
+    .progress-bar {
+      transition: stroke-dashoffset 0.8s ease;
+    }
   </style>
 </head>
-<body class="bg-main text-slate-100 min-h-screen flex items-center justify-center p-4">
+<body class="min-h-screen flex items-center justify-center p-4">
 
-  <div class="w-full max-w-md bg-[#131b2e] border border-slate-800 rounded-3xl p-6 shadow-2xl space-y-6">
-    
-    <!-- هدر کارت -->
-    <div class="flex items-center justify-between border-b border-slate-800/80 pb-4">
+  <div class="w-full max-w-xl panel-card rounded-3xl p-6 sm:p-8 shadow-2xl space-y-6">
+
+    <!-- Header -->
+    <div class="flex items-center justify-between">
       <div class="flex items-center gap-3">
         <div class="w-10 h-10 rounded-2xl bg-cyan-500/10 flex items-center justify-center text-cyan-400 border border-cyan-500/20">
           <i class="fa-solid fa-wifi"></i>
         </div>
         <div>
           <h1 class="text-base font-bold text-white tracking-wide">Subscription info</h1>
-          <p id="user-remark" class="text-xs text-slate-400 font-mono">Pasargad Net</p>
+          <p id="user-sub-id" class="text-xs text-slate-400 font-mono">Loading...</p>
         </div>
       </div>
       <div class="flex items-center gap-2">
-        <button id="theme-btn" class="w-8 h-8 rounded-xl bg-slate-800/80 hover:bg-slate-700 flex items-center justify-center text-slate-300 text-xs transition">
+        <button class="w-8 h-8 rounded-xl bg-slate-800/80 hover:bg-slate-700 flex items-center justify-center text-slate-300 text-xs transition">
           <i class="fa-regular fa-moon"></i>
         </button>
-      </div>
-    </div>
-
-    <!-- بخش گیج مصرف و حجم باقیمانده -->
-    <div class="flex items-center justify-between gap-4 bg-[#0e1626] p-5 rounded-2xl border border-slate-800/60">
-      <div class="relative w-24 h-24 flex-shrink-0 flex items-center justify-center">
-        <svg class="w-full h-full circle-progress" viewBox="0 0 100 100">
-          <circle cx="50" cy="50" r="40" stroke="#1e293b" stroke-width="8" fill="transparent"/>
-          <circle id="usage-gauge" cx="50" cy="50" r="40" stroke="#38bdf8" stroke-width="8" stroke-linecap="round" fill="transparent" stroke-dasharray="251.2" stroke-dashoffset="240" class="circle-progress-bar"/>
-        </svg>
-        <div class="absolute flex flex-col items-center justify-center">
-          <span id="stat-percentage" class="text-sm font-bold text-white font-mono">0.0%</span>
-          <span class="text-[10px] text-slate-400">مصرف</span>
-        </div>
-      </div>
-
-      <div class="flex flex-col flex-grow text-left dir-ltr">
-        <span class="text-xs text-slate-400 uppercase tracking-wider">Remaining</span>
-        <div class="flex items-baseline gap-1 mt-0.5">
-          <span id="stat-remaining" class="text-2xl font-black text-white font-mono">--</span>
-        </div>
-        <span id="stat-total" class="text-xs text-slate-500 font-mono">of -- GB</span>
-      </div>
-    </div>
-
-    <!-- گرید مشخصات (روزهای باقیمانده، انقضا، دانلود، آپلود) -->
-    <div class="grid grid-cols-2 gap-3 text-xs">
-      <div class="bg-[#0e1626] p-3.5 rounded-2xl border border-slate-800/60">
-        <div class="text-slate-400 mb-1 text-[11px]">زمان باقیمانده</div>
-        <div class="flex items-baseline gap-1">
-          <span id="stat-days-left" class="text-base font-bold text-white font-mono">--</span>
-          <span class="text-[10px] text-slate-500">روز</span>
-        </div>
-      </div>
-
-      <div class="bg-[#0e1626] p-3.5 rounded-2xl border border-slate-800/60">
-        <div class="text-slate-400 mb-1 text-[11px]">تاریخ انقضا</div>
-        <div id="stat-expiry" class="text-xs font-semibold text-slate-200 font-mono">--</div>
-      </div>
-
-      <div class="bg-[#0e1626] p-3.5 rounded-2xl border border-slate-800/60">
-        <div class="text-slate-400 mb-1 text-[11px]">دانلود</div>
-        <div id="stat-download" class="text-xs font-semibold text-slate-200 font-mono">-- MB</div>
-      </div>
-
-      <div class="bg-[#0e1626] p-3.5 rounded-2xl border border-slate-800/60">
-        <div class="text-slate-400 mb-1 text-[11px]">آپلود</div>
-        <div id="stat-upload" class="text-xs font-semibold text-slate-200 font-mono">-- MB</div>
-      </div>
-    </div>
-
-    <!-- باکس لینک سابسکریپشن و دکمه کپی -->
-    <div class="space-y-2">
-      <label class="text-xs text-slate-400 font-medium flex items-center justify-between">
-        <span>لینک سابسکریپشن</span>
-        <span id="copy-status" class="text-emerald-400 text-[11px] hidden"><i class="fa-solid fa-check ml-1"></i>کپی شد</span>
-      </label>
-      <div class="flex items-center bg-[#0e1626] border border-slate-800 rounded-2xl p-1.5 focus-within:border-cyan-500/50 transition">
-        <span class="bg-cyan-500/10 text-cyan-400 text-xs px-2.5 py-1.5 rounded-xl font-bold font-mono ml-2 border border-cyan-500/20">SUB</span>
-        <input id="sub-url-input" type="text" readonly class="bg-transparent border-none outline-none text-xs text-slate-300 font-mono flex-grow px-1 truncate dir-ltr select-all" value="" />
-        <button id="copy-btn" class="bg-cyan-500 hover:bg-cyan-400 text-slate-950 px-3 py-1.5 rounded-xl text-xs font-semibold flex items-center gap-1 transition">
-          <i class="fa-regular fa-copy"></i>
-          <span>کپی</span>
+        <button class="w-8 h-8 rounded-xl bg-slate-800/80 hover:bg-slate-700 flex items-center justify-center text-slate-300 text-xs transition">
+          <i class="fa-solid fa-sliders"></i>
         </button>
       </div>
     </div>
 
-    <!-- کیوآرکد (QR Code) -->
-    <div class="bg-[#0e1626] border border-slate-800/80 rounded-2xl p-5 flex flex-col items-center justify-center space-y-3">
-      <div id="qrcode" class="p-2 bg-white rounded-xl shadow-lg"></div>
-      <p class="text-[11px] text-slate-400 text-center">این بارکد را در برنامه VPN گوشی خود اسکن کنید</p>
+    <!-- Usage & Remaining Stats -->
+    <div class="flex items-center gap-6 py-2">
+      <!-- Circle Gauge -->
+      <div class="relative w-28 h-28 flex-shrink-0 flex items-center justify-center">
+        <svg class="w-full h-full circle-svg" viewBox="0 0 100 100">
+          <circle cx="50" cy="50" r="40" stroke="#1e293b" stroke-width="7" fill="transparent"/>
+          <circle id="usage-gauge" cx="50" cy="50" r="40" stroke="#38bdf8" stroke-width="7" stroke-linecap="round" fill="transparent" stroke-dasharray="251.2" stroke-dashoffset="251.2" class="progress-bar"/>
+        </svg>
+        <div class="absolute flex flex-col items-center justify-center">
+          <span id="stat-percentage" class="text-base font-bold text-white font-mono">0.0%</span>
+          <span class="text-[11px] text-slate-400">Usage</span>
+        </div>
+      </div>
+
+      <!-- Remaining Quota Text -->
+      <div class="flex flex-col">
+        <span class="text-xs text-slate-400 uppercase tracking-wider font-semibold">Remaining</span>
+        <div class="flex items-baseline gap-1 mt-1">
+          <span id="stat-remaining" class="text-3xl sm:text-4xl font-black text-white font-mono">--</span>
+          <span class="text-sm font-bold text-slate-400 font-mono">GB</span>
+        </div>
+        <span id="stat-total" class="text-xs text-slate-500 font-mono mt-0.5">of -- GB</span>
+      </div>
     </div>
 
-    <!-- دکمه‌های اتصال سریع به برنامه‌ها -->
-    <div class="grid grid-cols-3 gap-2">
-      <button id="btn-v2ray" class="bg-slate-800/80 hover:bg-slate-700 py-2.5 rounded-xl text-xs font-medium text-slate-200 transition border border-slate-700/50 flex flex-col items-center gap-1">
-        <i class="fa-solid fa-paper-plane text-cyan-400"></i>
-        <span>v2rayNG</span>
+    <!-- Data Metrics Grid -->
+    <div class="grid grid-cols-3 gap-3 text-xs">
+      <div class="inner-box p-3.5 rounded-2xl">
+        <div class="text-slate-400 text-[11px] mb-1">Days left</div>
+        <div id="stat-days-left" class="text-base font-bold text-white font-mono">--</div>
+      </div>
+      <div class="inner-box p-3.5 rounded-2xl col-span-1">
+        <div class="text-slate-400 text-[11px] mb-1">Expiry</div>
+        <div id="stat-expiry" class="text-xs font-semibold text-slate-200 font-mono truncate">--</div>
+      </div>
+      <div class="inner-box p-3.5 rounded-2xl">
+        <div class="text-slate-400 text-[11px] mb-1">Status</div>
+        <span id="stat-status" class="inline-flex px-2 py-0.5 rounded-md text-[10px] font-semibold bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">Active</span>
+      </div>
+
+      <div class="inner-box p-3.5 rounded-2xl">
+        <div class="text-slate-400 text-[11px] mb-1">Downloaded</div>
+        <div id="stat-download" class="text-xs font-semibold text-slate-200 font-mono">-- MB</div>
+      </div>
+      <div class="inner-box p-3.5 rounded-2xl">
+        <div class="text-slate-400 text-[11px] mb-1">Uploaded</div>
+        <div id="stat-upload" class="text-xs font-semibold text-slate-200 font-mono">-- MB</div>
+      </div>
+      <div class="inner-box p-3.5 rounded-2xl">
+        <div class="text-slate-400 text-[11px] mb-1">Total quota</div>
+        <div id="stat-total-quota" class="text-xs font-semibold text-slate-200 font-mono">-- GB</div>
+      </div>
+    </div>
+
+    <!-- Tabs Navigation -->
+    <div class="flex items-center gap-6 border-b border-slate-800 text-xs font-medium pt-2">
+      <button id="tab-btn-sub" onclick="switchTab('sub')" class="pb-3 text-cyan-400 border-b-2 border-cyan-400 flex items-center gap-1.5 transition">
+        <i class="fa-solid fa-link text-xs"></i>
+        <span>Subscription</span>
       </button>
-      <button id="btn-singbox" class="bg-slate-800/80 hover:bg-slate-700 py-2.5 rounded-xl text-xs font-medium text-slate-200 transition border border-slate-700/50 flex flex-col items-center gap-1">
-        <i class="fa-solid fa-box text-orange-400"></i>
-        <span>Sing-box</span>
+      <button id="tab-btn-apps" onclick="switchTab('apps')" class="pb-3 text-slate-400 hover:text-slate-200 flex items-center gap-1.5 transition">
+        <i class="fa-solid fa-shapes text-xs"></i>
+        <span>Apps</span>
       </button>
-      <button id="btn-streisand" class="bg-slate-800/80 hover:bg-slate-700 py-2.5 rounded-xl text-xs font-medium text-slate-200 transition border border-slate-700/50 flex flex-col items-center gap-1">
-        <i class="fa-solid fa-shield text-emerald-400"></i>
-        <span>Streisand</span>
+      <button id="tab-btn-configs" onclick="switchTab('configs')" class="pb-3 text-slate-400 hover:text-slate-200 flex items-center gap-1.5 transition">
+        <i class="fa-solid fa-bars-staggered text-xs"></i>
+        <span>Configs</span>
+        <span id="configs-count-badge" class="bg-slate-800 text-slate-300 text-[10px] px-1.5 py-0.2 rounded-full">0</span>
       </button>
     </div>
 
-    <!-- فوتر کوچک -->
-    <div class="text-center text-[10px] text-slate-600 font-mono pt-2">
-      Auto-updates every 12 hours • Pasargad UI
+    <!-- Tab Content 1: Subscription -->
+    <div id="tab-sub" class="space-y-4">
+      <div class="inner-box p-3 rounded-2xl flex items-center gap-2">
+        <span class="bg-emerald-500/10 text-emerald-400 text-[11px] px-2.5 py-1 rounded-xl font-bold font-mono border border-emerald-500/20">SUB</span>
+        <input id="sub-url-input" type="text" readonly class="bg-transparent border-none outline-none text-xs text-slate-300 font-mono flex-grow truncate px-1 select-all" value="" />
+        <button id="copy-btn" class="w-8 h-8 rounded-xl bg-slate-800 hover:bg-slate-700 flex items-center justify-center text-slate-300 transition" title="Copy">
+          <i class="fa-regular fa-copy"></i>
+        </button>
+        <button id="qr-toggle-btn" class="w-8 h-8 rounded-xl bg-slate-800 hover:bg-slate-700 flex items-center justify-center text-slate-300 transition" title="QR Code">
+          <i class="fa-solid fa-qrcode"></i>
+        </button>
+      </div>
+
+      <!-- QR Box (as in screenshot) -->
+      <div class="inner-box p-5 rounded-2xl flex flex-col sm:flex-row items-center gap-5">
+        <div class="p-2 bg-white rounded-xl flex-shrink-0 shadow-lg">
+          <div id="qrcode"></div>
+        </div>
+        <div class="space-y-1 text-center sm:text-left">
+          <h4 class="text-sm font-bold text-white">Scan with your phone</h4>
+          <p class="text-xs text-slate-400 leading-relaxed">Scan this code in your VPN app to add the subscription without copying the link.</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Tab Content 2: Apps -->
+    <div id="tab-apps" class="hidden grid grid-cols-2 gap-3 text-xs">
+      <a id="link-v2rayng" href="#" class="inner-box p-4 rounded-2xl hover:border-cyan-500/40 transition flex items-center gap-3">
+        <i class="fa-solid fa-paper-plane text-cyan-400 text-lg"></i>
+        <div>
+          <div class="font-bold text-white">v2rayNG</div>
+          <div class="text-[10px] text-slate-400">Import to Android</div>
+        </div>
+      </a>
+      <a id="link-singbox" href="#" class="inner-box p-4 rounded-2xl hover:border-cyan-500/40 transition flex items-center gap-3">
+        <i class="fa-solid fa-box text-orange-400 text-lg"></i>
+        <div>
+          <div class="font-bold text-white">Sing-box</div>
+          <div class="text-[10px] text-slate-400">Universal Client</div>
+        </div>
+      </a>
+      <a id="link-streisand" href="#" class="inner-box p-4 rounded-2xl hover:border-cyan-500/40 transition flex items-center gap-3">
+        <i class="fa-solid fa-shield text-emerald-400 text-lg"></i>
+        <div>
+          <div class="font-bold text-white">Streisand</div>
+          <div class="text-[10px] text-slate-400">Import to iOS</div>
+        </div>
+      </a>
+      <a id="link-shadowrocket" href="#" class="inner-box p-4 rounded-2xl hover:border-cyan-500/40 transition flex items-center gap-3">
+        <i class="fa-solid fa-rocket text-purple-400 text-lg"></i>
+        <div>
+          <div class="font-bold text-white">Shadowrocket</div>
+          <div class="text-[10px] text-slate-400">Import to iOS</div>
+        </div>
+      </a>
+    </div>
+
+    <!-- Tab Content 3: Configs -->
+    <div id="tab-configs" class="hidden space-y-2.5">
+      <div id="configs-list" class="space-y-2 text-xs">
+        <div class="text-center py-6 text-slate-500">Loading configurations...</div>
+      </div>
+    </div>
+
+    <!-- Footer -->
+    <div class="text-xs text-slate-600 font-mono text-center sm:text-left pt-2">
+      Auto-updates every 12 hours
     </div>
 
   </div>
 
   <script>
-    const WORKER_SUB_URL = "https://late-truth-84b6.phoenix1198811.workers.dev/sub/djMsMSwxNzg5OTQ1NTEy.d1JmvrNN3xP-emhSxOLdoOJuU8YZnBCPZp5pTJm3EnI";
+    const REAL_SUB_URL = "https://late-truth-84b6.phoenix1198811.workers.dev/sub/djMsMSwxNzg5OTQ1NTEy.d1JmvrNN3xP-emhSxOLdoOJuU8YZnBCPZp5pTJm3EnI";
 
-    // ساخت QR کد
-    function makeQR(url) {
-      const qrEl = document.getElementById("qrcode");
-      qrEl.innerHTML = "";
-      new QRCode(qrEl, {
-        text: url,
-        width: 140,
-        height: 140,
+    function switchTab(tab) {
+      ['sub', 'apps', 'configs'].forEach(t => {
+        document.getElementById('tab-' + t).classList.add('hidden');
+        document.getElementById('tab-btn-' + t).className = 'pb-3 text-slate-400 hover:text-slate-200 flex items-center gap-1.5 transition';
+      });
+      document.getElementById('tab-' + tab).classList.remove('hidden');
+      document.getElementById('tab-btn-' + tab).className = 'pb-3 text-cyan-400 border-b-2 border-cyan-400 flex items-center gap-1.5 transition';
+    }
+
+    function makeQr(text) {
+      const el = document.getElementById("qrcode");
+      el.innerHTML = "";
+      new QRCode(el, {
+        text: text,
+        width: 120,
+        height: 120,
         colorDark : "#000000",
         colorLight : "#ffffff",
         correctLevel : QRCode.CorrectLevel.M
       });
     }
 
-    // به‌روزرسانی گیج دایره‌ای
-    function updateGauge(percent) {
-      const gauge = document.getElementById('usage-gauge');
-      const totalCircumference = 2 * Math.PI * 40; // 251.2
-      const offset = totalCircumference - (percent / 100) * totalCircumference;
-      gauge.style.strokeDashoffset = offset;
+    function updateCircle(percent) {
+      const circle = document.getElementById('usage-gauge');
+      const c = 2 * Math.PI * 40; // 251.2
+      const offset = c - (percent / 100) * c;
+      circle.style.strokeDashoffset = offset;
     }
 
-    // دریافت داده‌ها
-    async function initPage() {
-      // مقداردهی اولیه اینپوت و QR
-      document.getElementById('sub-url-input').value = WORKER_SUB_URL;
-      makeQR(WORKER_SUB_URL);
+    async function loadData() {
+      document.getElementById('sub-url-input').value = REAL_SUB_URL;
+      document.getElementById('user-sub-id').innerText = REAL_SUB_URL.split('/sub/')[1].slice(0, 16) + "...";
+      makeQr(REAL_SUB_URL);
 
-      // دکمه‌های ایمپورت سریع
-      document.getElementById('btn-v2ray').onclick = () => window.location.href = "v2rayng://install-config?url=" + encodeURIComponent(WORKER_SUB_URL);
-      document.getElementById('btn-singbox').onclick = () => window.location.href = "sing-box://import-remote-profile?url=" + encodeURIComponent(WORKER_SUB_URL);
-      document.getElementById('btn-streisand').onclick = () => window.location.href = "streisand://import/" + WORKER_SUB_URL;
+      // Setup App links
+      document.getElementById('link-v2rayng').href = "v2rayng://install-config?url=" + encodeURIComponent(REAL_SUB_URL);
+      document.getElementById('link-singbox').href = "sing-box://import-remote-profile?url=" + encodeURIComponent(REAL_SUB_URL);
+      document.getElementById('link-streisand').href = "streisand://import/" + REAL_SUB_URL;
+      document.getElementById('link-shadowrocket').href = "sub://" + btoa(REAL_SUB_URL);
 
-      // دکمه کپی
       document.getElementById('copy-btn').onclick = () => {
-        navigator.clipboard.writeText(WORKER_SUB_URL);
-        const status = document.getElementById('copy-status');
-        status.classList.remove('hidden');
-        setTimeout(() => status.classList.add('hidden'), 2000);
+        navigator.clipboard.writeText(REAL_SUB_URL);
+        alert("Subscription link copied!");
       };
 
       try {
-        const res = await fetch(WORKER_SUB_URL);
+        // خواندن از پروکسی داخلی nginx برای دور زدن CORS
+        const res = await fetch('/get-sub-data');
         const userInfo = res.headers.get('subscription-userinfo');
         
         if (userInfo) {
-          const data = {};
-          userInfo.split(';').forEach(item => {
-            const [k, v] = item.trim().split('=');
-            if (k && v) data[k] = parseInt(v, 10);
+          const stats = {};
+          userInfo.split(';').forEach(p => {
+            const [k, v] = p.trim().split('=');
+            if (k && v) stats[k] = parseInt(v, 10);
           });
 
-          const up = data.upload || 0;
-          const down = data.download || 0;
-          const total = data.total || (10 * 1024 * 1024 * 1024);
+          const up = stats.upload || 0;
+          const down = stats.download || 0;
+          const total = stats.total || (10 * 1024 * 1024 * 1024);
           const used = up + down;
-          const rem = Math.max(0, total - used);
+          const remaining = Math.max(0, total - used);
 
           const toGB = b => (b / (1024 ** 3)).toFixed(2);
           const toMB = b => (b / (1024 ** 2)).toFixed(2);
 
-          document.getElementById('stat-remaining').innerText = toGB(rem) + ' GB';
+          document.getElementById('stat-remaining').innerText = toGB(remaining);
           document.getElementById('stat-total').innerText = 'of ' + toGB(total) + ' GB';
+          document.getElementById('stat-total-quota').innerText = toGB(total) + ' GB';
           document.getElementById('stat-download').innerText = toMB(down) + ' MB';
           document.getElementById('stat-upload').innerText = toMB(up) + ' MB';
 
           const pct = total > 0 ? Math.min(100, (used / total) * 100).toFixed(1) : 0;
           document.getElementById('stat-percentage').innerText = pct + '%';
-          updateGauge(pct);
+          updateCircle(pct);
 
-          if (data.expire) {
-            const exp = new Date(data.expire * 1000);
-            document.getElementById('stat-expiry').innerText = exp.toISOString().split('T')[0];
-            const d = Math.max(0, Math.ceil((exp - new Date()) / (1000 * 60 * 60 * 24)));
-            document.getElementById('stat-days-left').innerText = d;
+          if (stats.expire) {
+            const exp = new Date(stats.expire * 1000);
+            document.getElementById('stat-expiry').innerText = exp.toISOString().replace('T', ' ').slice(0, 19);
+            const days = Math.max(0, Math.ceil((exp - new Date()) / (1000 * 60 * 60 * 24)));
+            document.getElementById('stat-days-left').innerText = days;
           }
         }
-      } catch (e) {
-        console.log("ورکر هدر CORS ندارد یا داده خوانده نشد، اما لینک و QR آماده کار هستند.");
+
+        // دیکود کردن کانفیگ‌ها و لیست کردن در تب Configs
+        const raw = await res.text();
+        let decoded = raw;
+        try { decoded = atob(raw.trim()); } catch(e) {}
+
+        const configs = decoded.split('\n').map(c => c.trim()).filter(c => c.length > 5);
+        document.getElementById('configs-count-badge').innerText = configs.length;
+
+        const listEl = document.getElementById('configs-list');
+        listEl.innerHTML = '';
+        if (configs.length === 0) {
+          listEl.innerHTML = '<div class="text-center py-4 text-slate-500">No configs found in subscription</div>';
+        } else {
+          configs.forEach((cfg, idx) => {
+            const name = decodeURIComponent(cfg.split('#')[1] || ('Config #' + (idx + 1)));
+            const div = document.createElement('div');
+            div.className = 'inner-box p-3 rounded-2xl flex items-center justify-between gap-2';
+            div.innerHTML = `
+              <div class="truncate flex items-center gap-2">
+                <span class="w-2 h-2 rounded-full bg-cyan-400"></span>
+                <span class="font-semibold text-slate-200 truncate">${name}</span>
+              </div>
+              <button onclick="navigator.clipboard.writeText('${cfg}'); alert('Config copied!');" class="w-7 h-7 rounded-lg bg-slate-800 hover:bg-slate-700 flex items-center justify-center text-slate-300 flex-shrink-0 transition">
+                <i class="fa-regular fa-copy text-xs"></i>
+              </button>
+            `;
+            listEl.appendChild(div);
+          });
+        }
+
+      } catch (err) {
+        console.error("Error reading sub data:", err);
       }
     }
 
-    window.addEventListener('DOMContentLoaded', initPage);
+    window.addEventListener('DOMContentLoaded', loadData);
   </script>
 </body>
 </html>
