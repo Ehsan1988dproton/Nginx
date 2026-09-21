@@ -759,5 +759,70 @@
       renderUI();
     });
   </script>
-</body>
+<script>
+  (function initLiveSubData() {
+    // استخراج توکن از آدرس مرورگر (مثال: domain.com/sub/myToken)
+    const pathParts = window.location.pathname.split('/').filter(Boolean);
+    const subIndex = pathParts.indexOf('sub');
+    const token = subIndex !== -1 && pathParts[subIndex + 1] ? pathParts[subIndex + 1] : null;
+
+    if (!token) return;
+
+    // ست کردن لینک کپی و QR کد با آدرس اختصاصی همین کاربر
+    const fullSubUrl = window.location.origin + '/sub/' + token;
+    const subInput = document.getElementById('sub-url-input');
+    if (subInput) subInput.value = fullSubUrl;
+
+    // دریافت وضعیت زنده سابسکریپشن از پنل
+    fetch('/api/sub-info/' + token)
+      .then(response => {
+        const userInfo = response.headers.get('subscription-userinfo');
+        if (userInfo) {
+          // هدر به فرمت: upload=123; download=456; total=789; expire=123456789
+          const stats = {};
+          userInfo.split(';').forEach(pair => {
+            const [k, v] = pair.trim().split('=');
+            if (k && v) stats[k] = parseInt(v, 10);
+          });
+
+          const upload = stats.upload || 0;
+          const download = stats.download || 0;
+          const total = stats.total || 0;
+          const used = upload + download;
+          const remaining = Math.max(0, total - used);
+
+          // فرمت کردن حجم بر حسب گیگابایت
+          const toGB = bytes => (bytes / (1024 ** 3)).toFixed(2);
+          const toMB = bytes => (bytes / (1024 ** 2)).toFixed(2);
+
+          // به‌روزرسانی مقادیر روی صفحه
+          document.querySelector('#stat-remaining').innerText = toGB(remaining) + ' GB';
+          document.querySelector('#stat-total').innerText = 'of ' + toGB(total) + ' GB';
+          document.querySelector('#stat-download').innerText = toMB(download) + ' MB';
+          document.querySelector('#stat-upload').innerText = toMB(upload) + ' MB';
+          document.querySelector('#stat-total-quota').innerText = toGB(total) + ' GB';
+
+          // محاسبه درصد و انیمیشن گیج دایره‌ای
+          const percentage = total > 0 ? Math.min(100, (used / total) * 100).toFixed(1) : 0;
+          document.querySelector('#stat-percentage').innerText = percentage + '%';
+
+          // محاسبه تاریخ انقضا
+          if (stats.expire) {
+            const expDate = new Date(stats.expire * 1000);
+            document.querySelector('#stat-expiry').innerText = expDate.toLocaleDateString('en-US');
+            const daysLeft = Math.max(0, Math.ceil((expDate - new Date()) / (1000 * 60 * 60 * 24)));
+            document.querySelector('#stat-days-left').innerText = daysLeft;
+          }
+        }
+        return response.text();
+      })
+      .then(configs => {
+        // بازسازی مجدد QR کد بر اساس لینک واقعی
+        if (typeof generateQrCode === 'function') {
+          generateQrCode(fullSubUrl);
+        }
+      })
+      .catch(err => console.log('Auto-fetch sub info error:', err));
+  })();
+</script></body>
 </html>
